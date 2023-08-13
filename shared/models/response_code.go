@@ -28,6 +28,34 @@ const (
 	ResponseCodeIdentityTheft      ResponseCode = "602"
 	ResponseCodeCustomFraudCode1   ResponseCode = "603"
 	ResponseCodeCustomFraudCode2   ResponseCode = "604"
-
-	// Add more response codes as needed
 )
+
+var SuccessfulResponseCodes = []ResponseCode{
+	ResponseCodeSuccessfulAction,
+	ResponseCodeSuccess,
+}
+
+var FailureResponseCodes = []ResponseCode{
+	ResponseCodeFailure,
+	ResponseCodeInvalidData,
+	ResponseCodeInsufficientFunds,
+	ResponseCodeDuplicateTransaction,
+	ResponseCodeCustomFailureCode1,
+	ResponseCodeCustomFailureCode2,
+}
+
+var InformationResponseCode = []ResponseCode{
+	ResponseCodeExtraInformation,
+	ResponseCodeAdditionalData,
+	ResponseCodePendingAction,
+	ResponseCodeCustomCode1,
+	ResponseCodeCustomCode2,
+}
+
+var FraudResponseCode = []ResponseCode{
+	ResponseCodeFraudDetected,
+	ResponseCodeSuspiciousActivity,
+	ResponseCodeIdentityTheft,
+	ResponseCodeCustomFraudCode1,
+	ResponseCodeCustomFraudCode2,
+}

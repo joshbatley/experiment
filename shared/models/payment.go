@@ -28,7 +28,7 @@ type Payment struct {
 
 func NewPayment(
 	ID string, paymentID string, actionID string, clientId string,
-	description string, currency CurrencyCode, paymentMethod PaymentMethod, responseCode ResponseCode,
+	description string, currency CurrencyCode, paymentMethod PaymentMethod,
 ) *Payment {
 	return &Payment{
 		ID:            ID,
@@ -38,7 +38,6 @@ func NewPayment(
 		Description:   description,
 		Currency:      currency,
 		PaymentMethod: paymentMethod,
-		ResponseCode:  responseCode,
 		Timestamp:     time.Now(),
 	}
 }
