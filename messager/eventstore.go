@@ -31,27 +31,27 @@ func NewInMemory() *InMemoryEventStore {
 	}
 }
 
-func (s *InMemoryEventStore) AddUnfinishedEvent(e Event) error {
-	s.keys = append(s.keys, e.ID)
-	s.store[e.ID] = e
+func (i *InMemoryEventStore) AddUnfinishedEvent(ev Event) error {
+	i.keys = append(i.keys, ev.ID)
+	i.store[ev.ID] = ev
 	return nil
 }
 
-func (s *InMemoryEventStore) GetRandomEvent() (Event, error) {
-	if len(s.keys) <= 0 {
+func (i *InMemoryEventStore) GetRandomEvent() (Event, error) {
+	if len(i.keys) <= 0 {
 		return Event{}, errors.New("empty")
 	}
 	r := rand.New(rand.NewSource(time.Now().Unix()))
-	rKey := s.keys[r.Intn(len(s.keys))]
-	return s.store[rKey], nil
+	rKey := i.keys[r.Intn(len(i.keys))]
+	return i.store[rKey], nil
 }
 
-func (s *InMemoryEventStore) RemoveEvent(id string) error {
-	if len(s.keys) <= 0 {
+func (i *InMemoryEventStore) RemoveEvent(id string) error {
+	if len(i.keys) <= 0 {
 		return errors.New("empty")
 	}
-	idx := utils.FindIndex(s.keys, id)
-	s.keys = append(s.keys[:idx], s.keys[idx+1:]...)
-	delete(s.store, id)
+	idx := utils.FindIndex(i.keys, id)
+	i.keys = append(i.keys[:idx], i.keys[idx+1:]...)
+	delete(i.store, id)
 	return nil
 }

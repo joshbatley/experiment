@@ -2,7 +2,9 @@ package utils
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"github.com/google/uuid"
+	"os"
 )
 
 func NewEventId() string {
@@ -25,4 +27,17 @@ func FindIndex[T comparable](slice []T, value T) int {
 		}
 	}
 	return -1
+}
+
+func ReadConfig[T any](path string) (T, error) {
+	var val T
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return val, err
+	}
+
+	if err := json.Unmarshal(data, &val); err != nil {
+		return val, err
+	}
+	return val, err
 }
