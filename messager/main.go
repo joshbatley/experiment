@@ -1,7 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+	"os"
 	utils "shared"
 	"shared/models"
 	"sort"
@@ -13,14 +15,16 @@ type Setting struct {
 }
 
 func main() {
+	output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
+	log.Logger = zerolog.New(output).With().Timestamp().Logger()
+
 	setting, err := utils.ReadConfig[Setting]("./settings.json")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(setting.Tps)
+	log.Print(setting.Tps)
 	store := NewInMemory()
 	GetUnfinishedPayment(store)
-	//fmt.Printf("%+v\n", event.ID)
 
 }
 
@@ -46,13 +50,13 @@ func GetUnfinishedPayment(s EventStore) {
 	})
 
 	v, _ := s.GetRandomEvent()
-	fmt.Print("", v)
+	log.Print("", v)
 	s.RemoveEvent(v.ID)
 	v, err := s.GetRandomEvent()
 	if err != nil {
-		fmt.Print("Error")
+		log.Print("Error")
 	}
-	fmt.Print("", v)
+	log.Print("", v)
 	// Get random event from store (not lifo/fifo)
 	// Workout out what is next possible actions
 	// Generate event
