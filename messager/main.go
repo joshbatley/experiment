@@ -1,9 +1,7 @@
 package main
 
 import (
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"os"
 	utils "shared"
 	"shared/models"
 	"sort"
@@ -11,18 +9,25 @@ import (
 )
 
 type Setting struct {
-	Tps int `json:"tps,omitempty"`
+	Tps       int      `json:"tps,omitempty"`
+	Tags      []string `json:"tags,omitempty"`
+	logUrl    string   `json:"log_url,omitempty"`
+	logApiKey string   `json:"log_api_key,omitempty"`
 }
 
 func main() {
-	output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
-	log.Logger = zerolog.New(output).With().Timestamp().Logger()
-
 	setting, err := utils.ReadConfig[Setting]("./settings.json")
+	utils.
+		NewLogger().
+		WithHttpLogger("", "").
+		WithTags(setting.Tags).
+		WithConsoleLogger().
+		Build()
+
 	if err != nil {
 		panic(err)
 	}
-	log.Print(setting.Tps)
+	log.Print("Application Starting up")
 	store := NewInMemory()
 	GetUnfinishedPayment(store)
 
@@ -50,13 +55,13 @@ func GetUnfinishedPayment(s EventStore) {
 	})
 
 	v, _ := s.GetRandomEvent()
-	log.Print("", v)
+	//log.Print("", v)
 	s.RemoveEvent(v.ID)
 	v, err := s.GetRandomEvent()
 	if err != nil {
-		log.Print("Error")
+		//log.Print("Error")
 	}
-	log.Print("", v)
+	//log.Print("", v)
 	// Get random event from store (not lifo/fifo)
 	// Workout out what is next possible actions
 	// Generate event
