@@ -1,6 +1,7 @@
 {
-  "tps": 1000,
-  "log_url": "",
-  "log_api_key": "",
+  "tps": 100,
+  "logUrl": "",
+  "logApiKey": "",
+  "env": "dev",
   "tags": ["Messager", "v1.0.0"]
 }

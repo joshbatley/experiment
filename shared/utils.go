@@ -29,7 +29,11 @@ func FindIndex[T comparable](slice []T, value T) int {
 	return -1
 }
 
-func ReadConfig[T any](path string) (T, error) {
+func ReadConfig[T any]() (T, error) {
+	return readConfig[T]("./settings.json")
+}
+
+func readConfig[T any](path string) (T, error) {
 	var val T
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -39,5 +43,5 @@ func ReadConfig[T any](path string) (T, error) {
 	if err := json.Unmarshal(data, &val); err != nil {
 		return val, err
 	}
-	return val, err
+	return val, nil
 }
