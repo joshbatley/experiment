@@ -4,19 +4,19 @@ import (
 	"time"
 )
 
-type Engine struct {
+type Runner struct {
 	Store  EventStore
 	ticker *time.Ticker
 }
 
-func NewEngine(store EventStore, tps int) *Engine {
-	return &Engine{
+func NewRunner(store EventStore, tps int) *Runner {
+	return &Runner{
 		Store:  store,
 		ticker: time.NewTicker(time.Second / time.Duration(tps)),
 	}
 }
 
-func (e *Engine) StartUp() {
+func (e *Runner) StartUp() {
 	go func() {
 		for {
 			select {

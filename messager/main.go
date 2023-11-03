@@ -28,5 +28,5 @@ func main() {
 	log.Print("Application Starting up - ", setting.LogUrl)
 	defer log.Print("Application Shutting down - ", setting.LogUrl)
 
-	NewEngine(NewInMemory(), setting.Tps).StartUp()
+	NewRunner(NewInMemory(), setting.Tps).StartUp()
 }

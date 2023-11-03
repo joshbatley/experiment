@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type Payment struct {
+type Event struct {
 	ID               string                 `json:"id,omitempty"`
 	PaymentID        string                 `json:"payment_id,omitempty"`
 	ActionID         string                 `json:"action_id,omitempty"`
@@ -26,11 +26,11 @@ type Payment struct {
 	ResponseCode     ResponseCode           `json:"response_code,omitempty"`
 }
 
-func NewPayment(
+func NewEvent(
 	ID string, paymentID string, actionID string, clientId string,
 	description string, currency CurrencyCode, paymentMethod PaymentMethod,
-) *Payment {
-	return &Payment{
+) *Event {
+	return &Event{
 		ID:            ID,
 		PaymentID:     paymentID,
 		ActionID:      actionID,
@@ -42,59 +42,72 @@ func NewPayment(
 	}
 }
 
-func (p *Payment) AsCapture(amount float64, code ResponseCode) *Payment {
+func (p *Event) AsRequested(amount float64, code ResponseCode) *Event {
 	p.CaptureAmount = amount
 	p.ResponseCode = code
-	p.Action = ActionCapture
+	p.Action = ActionRequested
 	return p
 }
 
-func (p *Payment) AsAuthorized(amount float64, code ResponseCode) *Payment {
+func (p *Event) AsAuthorized(amount float64, code ResponseCode) *Event {
 	p.AuthorizedAmount = amount
 	p.ResponseCode = code
 	p.Action = ActionAuthorize
 	return p
 }
 
-func (p *Payment) AsRefund(amount float64, code ResponseCode) *Payment {
+func (p *Event) AsCapture(amount float64, code ResponseCode) *Event {
+	p.CaptureAmount = amount
+	p.ResponseCode = code
+	p.Action = ActionCapture
+	return p
+}
+
+func (p *Event) AsRefund(amount float64, code ResponseCode) *Event {
 	p.RefundAmount = amount
 	p.ResponseCode = code
 	p.Action = ActionRefund
 	return p
 }
 
-func (p *Payment) AsVoid(code ResponseCode) *Payment {
+func (p *Event) AsVoid(code ResponseCode) *Event {
 	p.Action = ActionVoid
 	p.ResponseCode = code
 	return p
 }
 
-func (p *Payment) WithCustomer(customer Customer) *Payment {
+func (p *Event) AsExpiry(code ResponseCode) *Event {
+	p.Action = ActionExpiry
+	p.ResponseCode = code
+	return p
+}
+
+func (p *Event) WithCustomer(customer Customer) *Event {
 	p.Customer = customer
 	return p
 }
 
-func (p *Payment) WithRecipient(recipient Recipient) *Payment {
+func (p *Event) WithRecipient(recipient Recipient) *Event {
 	p.Recipient = recipient
 	return p
 }
 
-func (p *Payment) WithShipping(address Address) *Payment {
+func (p *Event) WithShipping(address Address) *Event {
 	p.ShippingAddress = address
 	return p
 }
 
-func (p *Payment) WithBilling(address Address) *Payment {
+func (p *Event) WithBilling(address Address) *Event {
 	p.BillingAddress = address
 	return p
 }
 
-func (p *Payment) WithCardDetails(details CardDetails) *Payment {
+func (p *Event) WithCardDetails(details CardDetails) *Event {
 	p.CardDetails = details
 	return p
 }
 
-func (p *Payment) WithItems(items ...Item) *Payment {
+func (p *Event) WithItems(items ...Item) *Event {
 	p.Items = items
 	return p
 }

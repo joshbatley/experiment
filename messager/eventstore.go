@@ -8,38 +8,38 @@ import (
 	"time"
 )
 
-type Event struct {
+type Record struct {
 	ID         string
-	PastEvents []models.Payment
+	PastEvents []models.Event
 }
 
 type EventStore interface {
-	AddUnfinishedEvent(e Event) error
-	GetRandomEvent() (Event, error)
+	AddUnfinishedEvent(e Record) error
+	GetRandomEvent() (Record, error)
 	RemoveEvent(id string) error
 }
 
 type InMemoryEventStore struct {
-	store map[string]Event
+	store map[string]Record
 	keys  []string
 }
 
 func NewInMemory() *InMemoryEventStore {
 	return &InMemoryEventStore{
-		store: make(map[string]Event),
+		store: make(map[string]Record),
 		keys:  []string{},
 	}
 }
 
-func (i *InMemoryEventStore) AddUnfinishedEvent(ev Event) error {
+func (i *InMemoryEventStore) AddUnfinishedEvent(ev Record) error {
 	i.keys = append(i.keys, ev.ID)
 	i.store[ev.ID] = ev
 	return nil
 }
 
-func (i *InMemoryEventStore) GetRandomEvent() (Event, error) {
+func (i *InMemoryEventStore) GetRandomEvent() (Record, error) {
 	if len(i.keys) <= 0 {
-		return Event{}, errors.New("empty")
+		return Record{}, errors.New("empty")
 	}
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 	rKey := i.keys[r.Intn(len(i.keys))]

@@ -15,7 +15,7 @@ var count int = 0
 
 func Generate(store EventStore) string {
 	count++
-	log.Print("Event fired", count)
+	log.Print("Record fired", count)
 	return ""
 }
 
@@ -28,10 +28,10 @@ func GenerateEvent() {
 }
 
 func GetUnfinishedPayment(s EventStore) {
-	event := constructAuthorization()
-	s.AddUnfinishedEvent(Event{
+	event := constructRequested()
+	s.AddUnfinishedEvent(Record{
 		ID: "asdasd",
-		PastEvents: []models.Payment{
+		PastEvents: []models.Event{
 			*event,
 		},
 	})
@@ -50,7 +50,7 @@ func GetUnfinishedPayment(s EventStore) {
 	// Remove old
 }
 
-func ShouldExpireEvent(e Event) bool {
+func ShouldExpireEvent(e Record) bool {
 	sort.Slice(e.PastEvents, func(i, j int) bool {
 		return e.PastEvents[i].Timestamp.Before(e.PastEvents[j].Timestamp)
 	})

@@ -1,24 +1,6 @@
 package utils
 
-import (
-	"encoding/base64"
-	"encoding/json"
-	"github.com/google/uuid"
-	"os"
-)
-
-func NewEventId() string {
-	id, _ := uuid.NewUUID()
-	return id.String()
-}
-
-func NewActionId(eventId string) string {
-	return "act_" + base64.StdEncoding.EncodeToString([]byte(eventId))
-}
-
-func NewPaymentId() string {
-	return "pay_" + base64.StdEncoding.EncodeToString([]byte(NewEventId()))
-}
+import "math/rand"
 
 func FindIndex[T comparable](slice []T, value T) int {
 	for i, v := range slice {
@@ -29,19 +11,16 @@ func FindIndex[T comparable](slice []T, value T) int {
 	return -1
 }
 
-func ReadConfig[T any]() (T, error) {
-	return readConfig[T]("./settings.json")
+func Find[T any](slice []*T, comparable func(*T) bool) *T {
+	for _, v := range slice {
+		if comparable(v) {
+			return v
+		}
+	}
+	return nil
 }
 
-func readConfig[T any](path string) (T, error) {
-	var val T
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return val, err
-	}
-
-	if err := json.Unmarshal(data, &val); err != nil {
-		return val, err
-	}
-	return val, nil
+func GetRandomItem[T any](slice []T) T {
+	randomIdx := rand.Intn(len(slice))
+	return slice[randomIdx]
 }
