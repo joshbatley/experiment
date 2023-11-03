@@ -1,6 +1,9 @@
 package utils
 
-import "math/rand"
+import (
+	"errors"
+	"math/rand"
+)
 
 func FindIndex[T comparable](slice []T, value T) int {
 	for i, v := range slice {
@@ -11,13 +14,14 @@ func FindIndex[T comparable](slice []T, value T) int {
 	return -1
 }
 
-func Find[T any](slice []*T, comparable func(*T) bool) *T {
+func Find[T comparable](slice []T, comparable func(T) bool) (T, error) {
 	for _, v := range slice {
 		if comparable(v) {
-			return v
+			return v, nil
 		}
 	}
-	return nil
+	var empty T
+	return empty, errors.New("not found")
 }
 
 func GetRandomItem[T any](slice []T) T {

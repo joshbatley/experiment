@@ -1,33 +1,40 @@
 package main
 
 import (
+	"math/rand"
 	utils "shared"
 	"shared/models"
 	"sort"
 	"time"
 )
 
+const (
+	ExpireAfter = time.Second * 3000
+)
+
 type State struct {
-	name     models.Action
-	priority int
-	states   []models.Action
-	trigger  func(*models.Event) bool
-	progress func(*models.Event) *models.Event
+	key             models.Action
+	priority        int
+	nextStates      []models.Action
+	trigger         func(*models.Event) bool
+	progressPayment func(*models.Event) *models.Event
 }
 
 func getCurrentState(action models.Action) *State {
-	return utils.Find(States, func(s *State) bool {
-		return s.name == action
+	state, _ := utils.Find(States, func(s *State) bool {
+		return s.key == action
 	})
+
+	return state
 }
 
 // TODO: Think about this
-func (s *State) getNextState(p *Payment) *State {
-	var possibleState []*State
-	for _, c := range s.states {
+func (s *State) getNextState(p *Payment) State {
+	var possibleState []State
+	for _, c := range s.nextStates {
 		state := getCurrentState(c)
 		if state.trigger(p.currEvent) {
-			possibleState = append(possibleState, state)
+			possibleState = append(possibleState, *state)
 		}
 	}
 	sort.Slice(possibleState, func(i, j int) bool {
@@ -39,11 +46,11 @@ func (s *State) getNextState(p *Payment) *State {
 var States = []*State{Requested, Authorized, Captured, Refunded, Void, Expiry}
 
 var Requested = &State{
-	name: models.ActionRequested,
+	key: models.ActionRequested,
 	trigger: func(event *models.Event) bool {
 		return true
 	},
-	states: []models.Action{
+	nextStates: []models.Action{
 		models.ActionAuthorize,
 		models.ActionVoid,
 		models.ActionExpiry,
@@ -52,65 +59,68 @@ var Requested = &State{
 }
 
 var Authorized = &State{
-	name: models.ActionAuthorize,
+	key: models.ActionAuthorize,
 	trigger: func(event *models.Event) bool {
-		return false
+		return true
 	},
-	states: []models.Action{
+	nextStates: []models.Action{
 		models.ActionCapture,
 		models.ActionRefund,
 		models.ActionVoid,
 		models.ActionExpiry,
 	},
-	progress: progressAuthorization,
-	priority: 1,
+	progressPayment: progressAuthorization,
+	priority:        1,
 }
 
 var Captured = &State{
-	name: models.ActionCapture,
+	key: models.ActionCapture,
 	trigger: func(event *models.Event) bool {
-		return false
+		return true
 	},
-	states: []models.Action{
+	nextStates: []models.Action{
 		models.ActionCapture,
 		models.ActionRefund,
 		models.ActionVoid,
 		models.ActionExpiry,
 	},
-	progress: progressCapture,
-	priority: 1,
+	progressPayment: progressCapture,
+	priority:        1,
 }
 
 var Refunded = &State{
-	name: models.ActionRefund,
+	key: models.ActionRefund,
 	trigger: func(event *models.Event) bool {
-		return false
+		randomNum := rand.Intn(3)
+		return randomNum == 0
 	},
-	states: []models.Action{
+	nextStates: []models.Action{
 		models.ActionCapture,
 		models.ActionRefund,
 		models.ActionVoid,
 		models.ActionExpiry,
 	},
-	progress: progressRefund,
-	priority: 3,
+	progressPayment: progressRefund,
+	priority:        3,
 }
 
 var Void = &State{
-	name: models.ActionVoid,
+	key: models.ActionVoid,
 	trigger: func(event *models.Event) bool {
-		return false
+		randomNum := rand.Intn(10)
+		return randomNum == 0
 	},
-	states:   []models.Action{},
-	progress: progressVoid,
-	priority: 5,
+	nextStates:      []models.Action{},
+	progressPayment: progressVoid,
+	priority:        5,
 }
 
 var Expiry = &State{
-	name: models.ActionVoid,
+	key: models.ActionExpiry,
 	trigger: func(event *models.Event) bool {
 		return event.Timestamp.After(time.Now().Add(ExpireAfter))
 	},
-	states:   []models.Action{},
-	priority: 10,
+	nextStates:      []models.Action{},
+	progressPayment: progressExpiry,
+	priority:        10,
 }

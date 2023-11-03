@@ -10,29 +10,40 @@ import (
 
 type Record struct {
 	ID         string
-	PastEvents []models.Event
+	PastEvents []*models.Event
 }
 
 type EventStore interface {
 	AddUnfinishedEvent(e Record) error
+	UpdateEvent(e Record) error
 	GetRandomEvent() (Record, error)
 	RemoveEvent(id string) error
 }
 
 type InMemoryEventStore struct {
-	store map[string]Record
-	keys  []string
+	store   map[string]Record
+	keys    []string
+	maxSize int
 }
 
 func NewInMemory() *InMemoryEventStore {
 	return &InMemoryEventStore{
-		store: make(map[string]Record),
-		keys:  []string{},
+		store:   make(map[string]Record),
+		keys:    []string{},
+		maxSize: 10,
 	}
 }
 
 func (i *InMemoryEventStore) AddUnfinishedEvent(ev Record) error {
+	if len(i.keys) >= i.maxSize {
+		return errors.New("max capacity")
+	}
 	i.keys = append(i.keys, ev.ID)
+	i.store[ev.ID] = ev
+	return nil
+}
+
+func (i *InMemoryEventStore) UpdateEvent(ev Record) error {
 	i.store[ev.ID] = ev
 	return nil
 }
