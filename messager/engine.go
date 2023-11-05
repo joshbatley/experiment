@@ -9,14 +9,14 @@ import (
 // TODO: Add some sort of limiter for the new event chance
 
 type Runner struct {
-	Store          EventStore
+	store          EventStore
 	ticker         *time.Ticker
 	newEventChance int
 }
 
 func NewRunner(store EventStore, tps int) *Runner {
 	return &Runner{
-		Store:          store,
+		store:          store,
 		ticker:         time.NewTicker(time.Second / time.Duration(tps)),
 		newEventChance: 2,
 	}
@@ -27,41 +27,45 @@ func (e *Runner) StartUp() {
 		for {
 			select {
 			case <-e.ticker.C:
-				ev, err := e.Generate()
+				ev, err := e.generate()
 				if err != nil {
 					log.Warn().Err(err).Send()
 					e.newEventChance++
 					continue
 				}
-				log.Print("%v", ev.currEvent.Action)
+				log.Print(ev.currEvent.Action)
 			}
 		}
 	}()
 	select {}
-	//time.Sleep(time.Second)
 }
 
-func (e *Runner) Generate() (*Payment, error) {
+func (e *Runner) generate() (*Payment, error) {
 	if e.rndCreateNewPayment() {
-		return createNewEvent(e.Store)
+		return createNewEvent(e.store)
 	}
-	record, err := e.Store.GetRandomEvent()
+	record, err := e.store.GetRandomEvent()
 	if err != nil {
-		return createNewEvent(e.Store)
+		return createNewEvent(e.store)
 	}
 
 	payment := PaymentFromRecord(record)
 	payment.Progress()
 	if payment.IsCompletedPayment {
-		if err := e.Store.RemoveEvent(payment.currEvent.ID); err != nil {
+		if err := e.store.RemoveEvent(payment.currEvent.ID); err != nil {
 			return nil, err
 		}
 		return payment, nil
 	}
-	if err := e.Store.UpdateEvent(payment.ToRecord()); err != nil {
+	if err := e.store.UpdateEvent(payment.ToRecord()); err != nil {
 		return nil, err
 	}
 	return payment, nil
+}
+
+func (e *Runner) rndCreateNewPayment() bool {
+	randomNum := rand.Intn(e.newEventChance)
+	return randomNum == 0
 }
 
 func createNewEvent(store EventStore) (*Payment, error) {
@@ -72,7 +76,6 @@ func createNewEvent(store EventStore) (*Payment, error) {
 	return payment, nil
 }
 
-func (e *Runner) rndCreateNewPayment() bool {
-	randomNum := rand.Intn(e.newEventChance)
-	return randomNum == 0
+func logEvent() {
+
 }

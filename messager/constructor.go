@@ -3,6 +3,7 @@ package main
 import (
 	"shared"
 	"shared/models"
+	"sort"
 )
 
 type Payment struct {
@@ -21,6 +22,9 @@ func NewPayment() *Payment {
 }
 
 func PaymentFromRecord(record Record) *Payment {
+	sort.Slice(record.PastEvents, func(i, j int) bool {
+		return record.PastEvents[i].Timestamp.Before(record.PastEvents[j].Timestamp)
+	})
 	return &Payment{
 		currEvent:          record.PastEvents[len(record.PastEvents)-1],
 		events:             record.PastEvents,
