@@ -40,7 +40,7 @@ func (e *Runner) StartUp() {
 	select {}
 }
 
-func (e *Runner) generate() (*Payment, error) {
+func (e *Runner) generate() (*payment, error) {
 	if e.rndCreateNewPayment() {
 		return createNewEvent(e.store)
 	}
@@ -51,7 +51,7 @@ func (e *Runner) generate() (*Payment, error) {
 
 	payment := PaymentFromRecord(record)
 	payment.Progress()
-	if payment.IsCompletedPayment {
+	if payment.isCompletedPayment {
 		if err := e.store.RemoveEvent(payment.currEvent.ID); err != nil {
 			return nil, err
 		}
@@ -68,7 +68,7 @@ func (e *Runner) rndCreateNewPayment() bool {
 	return randomNum == 0
 }
 
-func createNewEvent(store EventStore) (*Payment, error) {
+func createNewEvent(store EventStore) (*payment, error) {
 	payment := NewPayment()
 	if err := store.AddUnfinishedEvent(payment.ToRecord()); err != nil {
 		return nil, err

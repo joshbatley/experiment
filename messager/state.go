@@ -12,7 +12,7 @@ const (
 	ExpireAfter = time.Second * 3000
 )
 
-type State struct {
+type state struct {
 	key             models.Action
 	priority        int
 	nextStates      []models.Action
@@ -20,8 +20,8 @@ type State struct {
 	progressPayment func(*models.Event) *models.Event
 }
 
-func getCurrentState(action models.Action) *State {
-	state, _ := utils.Find(States, func(s *State) bool {
+func getCurrentState(action models.Action) *state {
+	state, _ := utils.Find(States, func(s *state) bool {
 		return s.key == action
 	})
 
@@ -29,8 +29,8 @@ func getCurrentState(action models.Action) *State {
 }
 
 // TODO: Think about this
-func (s *State) getNextState(p *Payment) State {
-	var possibleState []State
+func (s *state) getNextState(p *payment) state {
+	var possibleState []state
 	for _, c := range s.nextStates {
 		state := getCurrentState(c)
 		if state.trigger(p.currEvent) {
@@ -43,9 +43,9 @@ func (s *State) getNextState(p *Payment) State {
 	return possibleState[0]
 }
 
-var States = []*State{Requested, Authorized, Captured, Refunded, Void, Expiry}
+var States = []*state{Requested, Authorized, Captured, Refunded, Void, Expiry}
 
-var Requested = &State{
+var Requested = &state{
 	key: models.ActionRequested,
 	trigger: func(event *models.Event) bool {
 		return true
@@ -58,7 +58,7 @@ var Requested = &State{
 	priority: 1,
 }
 
-var Authorized = &State{
+var Authorized = &state{
 	key: models.ActionAuthorize,
 	trigger: func(event *models.Event) bool {
 		return true
@@ -73,7 +73,7 @@ var Authorized = &State{
 	priority:        1,
 }
 
-var Captured = &State{
+var Captured = &state{
 	key: models.ActionCapture,
 	trigger: func(event *models.Event) bool {
 		return true
@@ -88,7 +88,7 @@ var Captured = &State{
 	priority:        1,
 }
 
-var Refunded = &State{
+var Refunded = &state{
 	key: models.ActionRefund,
 	trigger: func(event *models.Event) bool {
 		randomNum := rand.Intn(3)
@@ -104,7 +104,7 @@ var Refunded = &State{
 	priority:        3,
 }
 
-var Void = &State{
+var Void = &state{
 	key: models.ActionVoid,
 	trigger: func(event *models.Event) bool {
 		randomNum := rand.Intn(10)
@@ -115,7 +115,7 @@ var Void = &State{
 	priority:        5,
 }
 
-var Expiry = &State{
+var Expiry = &state{
 	key: models.ActionExpiry,
 	trigger: func(event *models.Event) bool {
 		return event.Timestamp.After(time.Now().Add(ExpireAfter))
@@ -124,3 +124,54 @@ var Expiry = &State{
 	progressPayment: progressExpiry,
 	priority:        10,
 }
+
+func progressAuthorization(ev *models.Event) *models.Event {
+	return models.NewEvent(
+		ev.ID, utils.NewPaymentId(), "", "",
+		"", models.CurrencyAUD, models.PaymentMethodApplePay,
+	).AsAuthorized(10, models.ResponseCodeSuccess)
+}
+
+func progressCapture(ev *models.Event) *models.Event {
+	return models.NewEvent(
+		ev.ID, utils.NewPaymentId(), "", "",
+		"", models.CurrencyAUD, models.PaymentMethodApplePay,
+	).AsCapture(0.3, "")
+}
+
+func progressRefund(ev *models.Event) *models.Event {
+	return models.NewEvent(
+		ev.ID, utils.NewPaymentId(), "", "",
+		"", models.CurrencyAUD, models.PaymentMethodApplePay,
+	).AsRefund(0.1, "")
+}
+
+func progressVoid(ev *models.Event) *models.Event {
+	return models.NewEvent(
+		ev.ID, utils.NewPaymentId(), "", "",
+		"", models.CurrencyAUD, models.PaymentMethodApplePay,
+	).AsVoid("2000")
+}
+
+func progressExpiry(ev *models.Event) *models.Event {
+	return models.NewEvent(
+		ev.ID, utils.NewPaymentId(), "", "",
+		"", models.CurrencyAUD, models.PaymentMethodApplePay,
+	).AsExpiry("2000")
+}
+
+//func progressSuccessfulResponse(ev *models.Event) models.ResponseCode {
+//	return models.SuccessfulResponseCodes[0]
+//}
+//
+//func progressFailureResponse(ev *models.Event) models.ResponseCode {
+//	return models.FailureResponseCodes[0]
+//}
+//
+//func progressInfoResponse(ev *models.Event) models.ResponseCode {
+//	return models.InformationResponseCode[0]
+//}
+//
+//func progressFraudResponse(ev *models.Event) models.ResponseCode {
+//	return models.FraudResponseCode[0]
+//}
