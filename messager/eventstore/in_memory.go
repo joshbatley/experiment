@@ -1,24 +1,11 @@
-package main
+package eventstore
 
 import (
 	"errors"
 	"math/rand"
 	utils "shared"
-	"shared/models"
 	"time"
 )
-
-type Record struct {
-	ID         string
-	PastEvents []*models.Event
-}
-
-type EventStore interface {
-	AddUnfinishedEvent(e Record) error
-	UpdateEvent(e Record) error
-	GetRandomEvent() (Record, error)
-	RemoveEvent(id string) error
-}
 
 type InMemoryEventStore struct {
 	store   map[string]Record

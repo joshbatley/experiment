@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/rs/zerolog/log"
+	"messager/eventstore"
 	utils "shared"
 )
 
@@ -28,5 +29,5 @@ func main() {
 	log.Print("Application Starting up - ", setting.LogUrl)
 	defer log.Print("Application Shutting down - ", setting.LogUrl)
 
-	NewRunner(NewInMemory(), setting.Tps).StartUp()
+	NewRunner(eventstore.NewInMemory(), setting.Tps).StartUp()
 }

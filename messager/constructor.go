@@ -1,50 +1,51 @@
 package main
 
 import (
+	"messager/eventstore"
 	"shared"
 	"shared/models"
 	"sort"
 )
 
-type Payment struct {
+type Record struct {
 	events             []*models.Event
 	currEvent          *models.Event
 	isCompletedPayment bool
 }
 
-func NewPayment() *Payment {
+func NewRecord() *Record {
 	newEvent := constructRequested()
-	return &Payment{
+	return &Record{
 		events:             []*models.Event{newEvent},
 		currEvent:          newEvent,
 		isCompletedPayment: false,
 	}
 }
 
-func PaymentFromRecord(record Record) *Payment {
+func FromEventstoreRecord(record eventstore.Record) *Record {
 	sort.Slice(record.PastEvents, func(i, j int) bool {
 		return record.PastEvents[i].Timestamp.Before(record.PastEvents[j].Timestamp)
 	})
-	return &Payment{
+	return &Record{
 		currEvent:          record.PastEvents[len(record.PastEvents)-1],
 		events:             record.PastEvents,
 		isCompletedPayment: false,
 	}
 }
 
-func (p *Payment) ToRecord() Record {
-	return Record{
+func (p *Record) ToEventstoreRecord() eventstore.Record {
+	return eventstore.Record{
 		ID:         p.currEvent.ID,
 		PastEvents: p.events,
 	}
 }
 
-func (p *Payment) Progress() {
+func (p *Record) Progress() {
 	if p.isCompletedPayment {
 		return
 	}
 	nextState := getCurrentState(p.currEvent.Action).getNextState(p)
-	newEvent := nextState.progressPayment(p.currEvent)
+	newEvent := nextState.ProgressPayment(p.currEvent)
 	if len(nextState.nextStates) == 0 {
 		p.isCompletedPayment = true
 	}

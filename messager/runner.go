@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/rs/zerolog/log"
 	"math/rand"
+	"messager/eventstore"
 	"shared/models"
 	"time"
 )
@@ -10,12 +11,12 @@ import (
 // TODO: Add some sort of limiter for the new event chance
 
 type Runner struct {
-	store          EventStore
+	store          eventstore.EventStore
 	ticker         *time.Ticker
 	newEventChance int
 }
 
-func NewRunner(store EventStore, tps int) *Runner {
+func NewRunner(store eventstore.EventStore, tps int) *Runner {
 	return &Runner{
 		store:          store,
 		ticker:         time.NewTicker(time.Second / time.Duration(tps)),
@@ -41,8 +42,8 @@ func (e *Runner) StartUp() {
 	select {}
 }
 
-func (e *Runner) generate() (*Payment, error) {
-	if e.rndCreateNewPayment() {
+func (e *Runner) generate() (*Record, error) {
+	if e.rndCreateNewRecord() {
 		return createNewEvent(e.store)
 	}
 	record, err := e.store.GetRandomEvent()
@@ -50,7 +51,7 @@ func (e *Runner) generate() (*Payment, error) {
 		return createNewEvent(e.store)
 	}
 
-	payment := PaymentFromRecord(record)
+	payment := FromEventstoreRecord(record)
 	payment.Progress()
 	if payment.isCompletedPayment {
 		if err := e.store.RemoveEvent(payment.currEvent.ID); err != nil {
@@ -58,20 +59,20 @@ func (e *Runner) generate() (*Payment, error) {
 		}
 		return payment, nil
 	}
-	if err := e.store.UpdateEvent(payment.ToRecord()); err != nil {
+	if err := e.store.UpdateEvent(payment.ToEventstoreRecord()); err != nil {
 		return nil, err
 	}
 	return payment, nil
 }
 
-func (e *Runner) rndCreateNewPayment() bool {
+func (e *Runner) rndCreateNewRecord() bool {
 	randomNum := rand.Intn(e.newEventChance)
 	return randomNum == 0
 }
 
-func createNewEvent(store EventStore) (*Payment, error) {
-	payment := NewPayment()
-	if err := store.AddUnfinishedEvent(payment.ToRecord()); err != nil {
+func createNewEvent(store eventstore.EventStore) (*Record, error) {
+	payment := NewRecord()
+	if err := store.AddUnfinishedEvent(payment.ToEventstoreRecord()); err != nil {
 		return nil, err
 	}
 	return payment, nil
