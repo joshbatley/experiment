@@ -8,9 +8,9 @@ type Event struct {
 	ActionID         string                 `json:"action_id,omitempty"`
 	ClientId         string                 `json:"client_id,omitempty"`
 	Description      string                 `json:"description,omitempty"`
-	CaptureAmount    float64                `json:"capture_amount,omitempty"`
+	CapturedAmount   float64                `json:"captured_amount,omitempty"`
 	AuthorizedAmount float64                `json:"authorized_amount,omitempty"`
-	RefundAmount     float64                `json:"refund_amount,omitempty"`
+	RefundedAmount   float64                `json:"refunded_amount,omitempty"`
 	Timestamp        time.Time              `json:"timestamp"`
 	Metadata         map[string]interface{} `json:"metadata,omitempty"`
 	Currency         CurrencyCode           `json:"currency,omitempty"`
@@ -43,7 +43,7 @@ func NewEvent(
 }
 
 func (p *Event) AsRequested(amount float64, code ResponseCode) *Event {
-	p.CaptureAmount = amount
+	p.CapturedAmount = amount
 	p.ResponseCode = code
 	p.Action = ActionRequested
 	return p
@@ -57,14 +57,14 @@ func (p *Event) AsAuthorized(amount float64, code ResponseCode) *Event {
 }
 
 func (p *Event) AsCapture(amount float64, code ResponseCode) *Event {
-	p.CaptureAmount = amount
+	p.CapturedAmount = amount
 	p.ResponseCode = code
 	p.Action = ActionCapture
 	return p
 }
 
 func (p *Event) AsRefund(amount float64, code ResponseCode) *Event {
-	p.RefundAmount = amount
+	p.RefundedAmount = amount
 	p.ResponseCode = code
 	p.Action = ActionRefund
 	return p

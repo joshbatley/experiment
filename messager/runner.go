@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/rs/zerolog/log"
 	"math/rand"
+	"shared/models"
 	"time"
 )
 
@@ -33,14 +34,14 @@ func (e *Runner) StartUp() {
 					e.newEventChance++
 					continue
 				}
-				log.Print(ev.currEvent.Action)
+				logEvent(ev.currEvent)
 			}
 		}
 	}()
 	select {}
 }
 
-func (e *Runner) generate() (*payment, error) {
+func (e *Runner) generate() (*Payment, error) {
 	if e.rndCreateNewPayment() {
 		return createNewEvent(e.store)
 	}
@@ -68,7 +69,7 @@ func (e *Runner) rndCreateNewPayment() bool {
 	return randomNum == 0
 }
 
-func createNewEvent(store EventStore) (*payment, error) {
+func createNewEvent(store EventStore) (*Payment, error) {
 	payment := NewPayment()
 	if err := store.AddUnfinishedEvent(payment.ToRecord()); err != nil {
 		return nil, err
@@ -76,6 +77,28 @@ func createNewEvent(store EventStore) (*payment, error) {
 	return payment, nil
 }
 
-func logEvent() {
-
+func logEvent(ev *models.Event) {
+	log.Info().
+		Str("Id", ev.ID).
+		Str("Timestamp", ev.Timestamp.String()).
+		Str("PaymentId", ev.PaymentID).
+		Str("ActionId", ev.ActionID).
+		Str("ClientId", ev.ClientId).
+		Str("Action", string(ev.Action)).
+		Str("Status", string(ev.Status)).
+		Str("ResponseCode", string(ev.ResponseCode)).
+		Str("Description", ev.Description).
+		Str("Currency", string(ev.Currency)).
+		Str("PaymentMethod", string(ev.PaymentMethod)).
+		Float64("AuthorizedAmount", ev.AuthorizedAmount).
+		Float64("CapturedAmount", ev.CapturedAmount).
+		Float64("RefundedAmount", ev.RefundedAmount).
+		Interface("Metadata", ev.Metadata).
+		Interface("Items", ev.Items).
+		Interface("Customer", ev.Customer).
+		Interface("Recipient", ev.Recipient).
+		Interface("BillingAddress", ev.BillingAddress).
+		Interface("ShippingAddress", ev.ShippingAddress).
+		Interface("CardDetails", ev.CardDetails).
+		Send()
 }

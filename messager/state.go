@@ -29,7 +29,7 @@ func getCurrentState(action models.Action) *state {
 }
 
 // TODO: Think about this
-func (s *state) getNextState(p *payment) state {
+func (s *state) getNextState(p *Payment) state {
 	var possibleState []state
 	for _, c := range s.nextStates {
 		state := getCurrentState(c)

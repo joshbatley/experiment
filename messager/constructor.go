@@ -6,40 +6,40 @@ import (
 	"sort"
 )
 
-type payment struct {
+type Payment struct {
 	events             []*models.Event
 	currEvent          *models.Event
 	isCompletedPayment bool
 }
 
-func NewPayment() *payment {
+func NewPayment() *Payment {
 	newEvent := constructRequested()
-	return &payment{
+	return &Payment{
 		events:             []*models.Event{newEvent},
 		currEvent:          newEvent,
 		isCompletedPayment: false,
 	}
 }
 
-func PaymentFromRecord(record Record) *payment {
+func PaymentFromRecord(record Record) *Payment {
 	sort.Slice(record.PastEvents, func(i, j int) bool {
 		return record.PastEvents[i].Timestamp.Before(record.PastEvents[j].Timestamp)
 	})
-	return &payment{
+	return &Payment{
 		currEvent:          record.PastEvents[len(record.PastEvents)-1],
 		events:             record.PastEvents,
 		isCompletedPayment: false,
 	}
 }
 
-func (p *payment) ToRecord() Record {
+func (p *Payment) ToRecord() Record {
 	return Record{
 		ID:         p.currEvent.ID,
 		PastEvents: p.events,
 	}
 }
 
-func (p *payment) Progress() {
+func (p *Payment) Progress() {
 	if p.isCompletedPayment {
 		return
 	}
