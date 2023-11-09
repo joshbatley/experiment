@@ -1,11 +1,9 @@
 package utils
 
 import (
-	"bytes"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"io"
-	"net/http"
 	"os"
 	"time"
 )
@@ -42,21 +40,4 @@ func (l *Logger) WithConsoleLogger() *Logger {
 func (l *Logger) Build() {
 	outputs := zerolog.MultiLevelWriter(l.Writers...)
 	log.Logger = zerolog.New(outputs).With().Strs("tags", l.Tags).Timestamp().Logger()
-}
-
-type HttpWriter struct {
-	apiKey string
-	url    string
-}
-
-func NewHttpWriter(apiKey string, url string) *HttpWriter {
-	return &HttpWriter{
-		apiKey,
-		url,
-	}
-}
-
-func (w HttpWriter) Write(p []byte) (n int, err error) {
-	_, err = http.Post(w.url, "application/json", bytes.NewBuffer(p))
-	return len(p), err
 }
