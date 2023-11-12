@@ -18,6 +18,16 @@ func NewHttpWriter(apiKey string, url string) *HttpWriter {
 }
 
 func (w HttpWriter) Write(p []byte) (n int, err error) {
-	_, err = http.Post(w.url, "application/json", bytes.NewBuffer(p))
+	req, err := http.NewRequest("POST", w.url, bytes.NewBuffer(p))
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Set("x-api-key", w.apiKey)
+	c := &http.Client{}
+	_, err = c.Do(req)
+	if err != nil {
+		return 0, err
+	}
+
 	return len(p), err
 }

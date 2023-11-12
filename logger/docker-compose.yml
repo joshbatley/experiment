@@ -2,7 +2,14 @@ version: '3'
 
 services:
   elasticsearch:
-    image: elasticsearch:8.8.0
+    image: elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - ELASTIC_USERNAME=user
+      - ELASTIC_PASSWORD=password_123
+    volumes:
+      -  "./data/es:/usr/share/elasticsearch/data"
     ports:
-      - 9200:9200
-      - 9300:9300
+      - "9200:9200"
+      - "9300:9300"

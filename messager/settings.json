@@ -1,7 +1,8 @@
 {
-  "tps": 100,
-  "logUrl": "",
-  "logApiKey": "",
+  "tps": 1000,
+  "logUrl": "http://localhost:8090/intake",
+  "logApiKey": "JBSWY3DPEHPK3PXP",
   "env": "dev",
-  "tags": ["Messager", "v1.0.0"]
+  "tags": ["Messager", "v1.0.0"],
+  "AppName": "Messager"
 }

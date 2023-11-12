@@ -12,6 +12,7 @@ type Setting struct {
 	LogUrl    string   `json:"logUrl,omitempty"`
 	LogApiKey string   `json:"logApiKey,omitempty"`
 	Env       string   `json:"env,omitempty""`
+	AppName   string   `json:"appName,omitempty"`
 }
 
 func main() {
@@ -22,12 +23,12 @@ func main() {
 
 	logger := utils.NewLogger().WithConsoleLogger().WithTags(setting.Tags)
 	if setting.Env != "dev" {
-		logger.WithHttpLogger(setting.LogApiKey, setting.LogUrl)
+		logger.WithHttpLogger(setting.LogUrl, setting.LogApiKey)
 	}
 	logger.Build()
 
-	log.Print("Application Starting up - ", setting.LogUrl)
-	defer log.Print("Application Shutting down - ", setting.LogUrl)
+	log.Info().Msgf("Application Starting up - %s", setting.AppName)
+	defer log.Info().Msgf("Application Shutting down - %s", setting.AppName)
 
 	NewRunner(eventstore.NewInMemory(), setting.Tps).StartUp()
 }

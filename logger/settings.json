@@ -1,0 +1,5 @@
+{
+  "env": "dev",
+  "tags": ["Logger", "v1.0.0"],
+  "appName": "Logger"
+}

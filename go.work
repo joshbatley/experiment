@@ -4,4 +4,5 @@ use (
 ./messager
 ./shared
 ./logger
+./settings
 )
