@@ -1,6 +1,9 @@
 package clients
 
-import "time"
+import (
+	"net/http"
+	"time"
+)
 
 const (
 	APIKeyHeader = "x-api-key"
@@ -51,4 +54,15 @@ type APIKeyStore interface {
 	CreateAPIKey(key *APIKey) error
 	GetAPIKeyByID(id int) (*APIKey, error)
 	GetAPIKeyByValue(value string) (*APIKey, error)
+}
+
+func ApiKeyMiddleware(next http.HandlerFunc, apiKey string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		pKey := r.Header.Get(APIKeyHeader)
+		if pKey == apiKey {
+			next(w, r)
+			return
+		}
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	}
 }

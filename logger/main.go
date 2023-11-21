@@ -26,7 +26,7 @@ func main() {
 
 	_ = clients.NewVaultClient(setting.AppName)
 
-	srv := NewServer()
-	srv.AddHandler("/intake", AuthMiddleware(IntakeHandler, clients.APIKeyTemp))
-	srv.Serve()
+	srv := newServer()
+	srv.addHandler("/intake", clients.ApiKeyMiddleware(intakeHandler, clients.APIKeyTemp))
+	srv.serve()
 }

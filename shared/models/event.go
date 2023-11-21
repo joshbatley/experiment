@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"github.com/rs/zerolog/log"
+	"time"
+)
 
 type Event struct {
 	ID               string                 `json:"id,omitempty"`
@@ -110,4 +113,30 @@ func (p *Event) WithCardDetails(details CardDetails) *Event {
 func (p *Event) WithItems(items ...Item) *Event {
 	p.Items = items
 	return p
+}
+
+func (p *Event) Log() {
+	log.Info().
+		Str("Id", p.ID).
+		Str("Timestamp", p.Timestamp.String()).
+		Str("PaymentId", p.PaymentID).
+		Str("ActionId", p.ActionID).
+		Str("ClientId", p.ClientId).
+		Str("Action", string(p.Action)).
+		Str("Status", string(p.Status)).
+		Str("ResponseCode", string(p.ResponseCode)).
+		Str("Description", p.Description).
+		Str("Currency", string(p.Currency)).
+		Str("PaymentMethod", string(p.PaymentMethod)).
+		Float64("AuthorizedAmount", p.AuthorizedAmount).
+		Float64("CapturedAmount", p.CapturedAmount).
+		Float64("RefundedAmount", p.RefundedAmount).
+		Interface("Metadata", p.Metadata).
+		Interface("Items", p.Items).
+		Interface("Customer", p.Customer).
+		Interface("Recipient", p.Recipient).
+		Interface("BillingAddress", p.BillingAddress).
+		Interface("ShippingAddress", p.ShippingAddress).
+		Interface("CardDetails", p.CardDetails).
+		Send()
 }

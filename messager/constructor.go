@@ -2,7 +2,6 @@ package main
 
 import (
 	"messager/eventstore"
-	"shared"
 	"shared/models"
 	"sort"
 )
@@ -13,7 +12,7 @@ type Record struct {
 	isCompletedPayment bool
 }
 
-func NewRecord() *Record {
+func newRecord() *Record {
 	newEvent := constructRequested()
 	return &Record{
 		events:             []*models.Event{newEvent},
@@ -22,7 +21,7 @@ func NewRecord() *Record {
 	}
 }
 
-func FromEventstoreRecord(record eventstore.Record) *Record {
+func fromEventstoreRecord(record eventstore.Record) *Record {
 	sort.Slice(record.PastEvents, func(i, j int) bool {
 		return record.PastEvents[i].Timestamp.Before(record.PastEvents[j].Timestamp)
 	})
@@ -33,14 +32,14 @@ func FromEventstoreRecord(record eventstore.Record) *Record {
 	}
 }
 
-func (p *Record) ToEventstoreRecord() eventstore.Record {
+func (p *Record) toEventstoreRecord() eventstore.Record {
 	return eventstore.Record{
 		ID:         p.currEvent.ID,
 		PastEvents: p.events,
 	}
 }
 
-func (p *Record) Progress() {
+func (p *Record) progress() {
 	if p.isCompletedPayment {
 		return
 	}
@@ -51,11 +50,4 @@ func (p *Record) Progress() {
 	}
 	p.currEvent = newEvent
 	p.events = append(p.events, newEvent)
-}
-
-func constructRequested() *models.Event {
-	return models.NewEvent(
-		utils.NewEventId(), utils.NewPaymentId(), "", "",
-		"", models.CurrencyAUD, models.PaymentMethodApplePay,
-	).AsRequested(10, models.ResponseCodeSuccess)
 }

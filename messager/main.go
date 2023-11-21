@@ -30,5 +30,5 @@ func main() {
 	log.Info().Msgf("Application Starting up - %s", setting.AppName)
 	defer log.Info().Msgf("Application Shutting down - %s", setting.AppName)
 
-	NewRunner(eventstore.NewInMemory(), setting.Tps).StartUp()
+	newRunner(eventstore.NewInMemory(), setting.Tps).StartUp()
 }

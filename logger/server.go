@@ -7,19 +7,18 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"shared/clients"
 )
 
-type Server struct {
+type server struct {
 	port int
 	mux  *http.ServeMux
 	srv  *http.Server
 }
 
-func NewServer() *Server {
+func newServer() *server {
 	mux := http.NewServeMux()
 
-	return &Server{
+	return &server{
 		port: 9000,
 		mux:  mux,
 		srv: &http.Server{
@@ -29,11 +28,11 @@ func NewServer() *Server {
 	}
 }
 
-func (s *Server) AddHandler(url string, handler http.HandlerFunc) {
+func (s *server) addHandler(url string, handler http.HandlerFunc) {
 	s.mux.Handle(url, handler)
 }
 
-func (s *Server) Serve() {
+func (s *server) serve() {
 	go func() {
 		if err := s.srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Error().Msgf("ListenAndServe: %v", err)
@@ -50,19 +49,8 @@ func (s *Server) Serve() {
 	defer cancel()
 
 	if err := s.srv.Shutdown(ctx); err != nil {
-		log.Error().Msgf("Server Shutdown Failed: %+v", err)
+		log.Error().Msgf("server Shutdown Failed: %+v", err)
 	}
 
-	log.Info().Msg("Server stopped gracefully")
-}
-
-func AuthMiddleware(next http.HandlerFunc, apiKey string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		pKey := r.Header.Get(clients.APIKeyHeader)
-		if pKey == apiKey {
-			next(w, r)
-			return
-		}
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	}
+	log.Info().Msg("server stopped gracefully")
 }
