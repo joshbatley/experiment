@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/rs/zerolog/log"
 	utils "shared"
+	"shared/clients"
 )
 
 type Setting struct {
@@ -23,6 +24,9 @@ func main() {
 	log.Info().Msgf("Application Starting up - %s", setting.AppName)
 	defer log.Info().Msgf("Application Shutting down - %s", setting.AppName)
 
+	_ = clients.NewVaultClient(setting.AppName)
+
 	srv := NewServer()
+	srv.AddHandler("/intake", AuthMiddleware(IntakeHandler, clients.APIKeyTemp))
 	srv.Serve()
 }
