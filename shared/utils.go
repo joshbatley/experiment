@@ -28,3 +28,16 @@ func GetRandomItem[T any](slice []T) T {
 	randomIdx := rand.Intn(len(slice))
 	return slice[randomIdx]
 }
+
+func GenerateRandomNumber() float64 {
+	randomNumber := rand.Float64() * 100000
+	return randomNumber
+}
+
+func GenerateRandomNumberBetween(max float64) float64 {
+	randomNumber := rand.Float64() * max
+	if randomNumber == 0 {
+		return 0.1
+	}
+	return randomNumber
+}

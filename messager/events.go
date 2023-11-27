@@ -19,38 +19,27 @@ func constructRequested() *models.Event {
 	return models.NewEvent("cli_123123", generateRandomReference(8)).AsRequested()
 }
 
-func progressAuthorization(ev *models.Event) *models.Event {
-	return ev.AsAuthorized(10, models.ResponseCodeSuccess)
+func progressAuthorization(ev *models.Event) (*models.Event, bool) {
+	event := ev.AsAuthorized()
+	return event, false
 }
 
-func progressCapture(ev *models.Event) *models.Event {
-	return ev.AsCapture(0.3, "")
+func progressCapture(ev *models.Event) (*models.Event, bool) {
+	event := ev.AsCapture()
+	return event, false
 }
 
-func progressRefund(ev *models.Event) *models.Event {
-	return ev.AsRefund(0.1, "")
+func progressRefund(ev *models.Event) (*models.Event, bool) {
+	event := ev.AsRefund()
+	return event, false
 }
 
-func progressVoid(ev *models.Event) *models.Event {
-	return ev.AsVoid("2000")
+func progressVoid(ev *models.Event) (*models.Event, bool) {
+	event := ev.AsVoid()
+	return event, true
 }
 
-func progressExpiry(ev *models.Event) *models.Event {
-	return ev.AsExpiry("2000")
+func progressExpiry(ev *models.Event) (*models.Event, bool) {
+	event := ev.AsExpiry()
+	return event, true
 }
-
-//func progressSuccessfulResponse(ev *models.Event) models.ResponseCode {
-//	return models.SuccessfulResponseCodes[0]
-//}
-//
-//func progressFailureResponse(ev *models.Event) models.ResponseCode {
-//	return models.FailureResponseCodes[0]
-//}
-//
-//func progressInfoResponse(ev *models.Event) models.ResponseCode {
-//	return models.InformationResponseCode[0]
-//}
-//
-//func progressFraudResponse(ev *models.Event) models.ResponseCode {
-//	return models.FraudResponseCode[0]
-//}

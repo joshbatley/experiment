@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/rs/zerolog/log"
+	"math/rand"
 	utils "shared"
 	"time"
 )
@@ -42,6 +43,11 @@ func NewEvent(clientId string, reference string) *Event {
 	}
 }
 
+func randomChance() bool {
+	randomNum := rand.Intn(10)
+	return randomNum == 0
+}
+
 func (p *Event) updateIds() {
 	id := utils.NewEventId()
 	p.ID = id
@@ -51,78 +57,101 @@ func (p *Event) updateIds() {
 func (p *Event) AsRequested() *Event {
 	p.updateIds()
 	p.Action = ActionRequested
+	p.AuthorizedAmount = utils.GenerateRandomNumber()
+	p.Status = StatusPending
 	return p
 }
 
-func (p *Event) AsAuthorized(amount float64, code ResponseCode) *Event {
+func (p *Event) AsAuthorized() *Event {
 	p.updateIds()
-	p.AuthorizedAmount = amount
-	p.ResponseCode = code
+	p.ResponseCode = ResponseCodeSuccess
 	p.Action = ActionAuthorize
+	p.Status = StatusAuthorized
 	return p
 }
 
-func (p *Event) AsCapture(amount float64, code ResponseCode) *Event {
+func (p *Event) AsCapture() *Event {
 	p.updateIds()
-	p.CapturedAmount = amount
-	p.ResponseCode = code
+	p.ResponseCode = ResponseCodeSuccess
 	p.Action = ActionCapture
+	if randomChance() {
+		p.CapturedAmount = utils.GenerateRandomNumberBetween(p.AuthorizedAmount - p.CapturedAmount)
+		if p.CapturedAmount == p.AuthorizedAmount {
+			p.Status = StatusCaptured
+		} else {
+			p.Status = StatusPartiallyCaptured
+		}
+		return p
+	}
+	p.CapturedAmount = p.AuthorizedAmount
+	p.Status = StatusCaptured
 	return p
 }
 
-func (p *Event) AsRefund(amount float64, code ResponseCode) *Event {
+func (p *Event) AsRefund() *Event {
 	p.updateIds()
-	p.RefundedAmount = amount
-	p.ResponseCode = code
+	p.ResponseCode = ResponseCodeSuccess
 	p.Action = ActionRefund
+	if randomChance() {
+		p.RefundedAmount = utils.GenerateRandomNumberBetween(p.CapturedAmount - p.RefundedAmount)
+		if p.RefundedAmount == p.CapturedAmount {
+			p.Status = StatusRefunded
+		} else {
+			p.Status = StatusPartiallyRefunded
+		}
+		return p
+	}
+	p.RefundedAmount = p.CapturedAmount
+	p.Status = StatusRefunded
 	return p
 }
 
-func (p *Event) AsVoid(code ResponseCode) *Event {
+func (p *Event) AsVoid() *Event {
 	p.updateIds()
 	p.Action = ActionVoid
-	p.ResponseCode = code
+	p.ResponseCode = ResponseCodeSuccess
+	p.Status = StatusCancelled
 	return p
 }
 
-func (p *Event) AsExpiry(code ResponseCode) *Event {
+func (p *Event) AsExpiry() *Event {
 	p.updateIds()
 	p.Action = ActionExpiry
-	p.ResponseCode = code
+	p.ResponseCode = ResponseCodeSuccess
 	return p
 }
 
-func (p *Event) WithCustomer(customer Customer) *Event {
+func (p *Event) withCustomer(customer Customer) *Event {
 	p.Customer = customer
 	return p
 }
 
-func (p *Event) WithRecipient(recipient Recipient) *Event {
+func (p *Event) withRecipient(recipient Recipient) *Event {
 	p.Recipient = recipient
 	return p
 }
 
-func (p *Event) WithShipping(address Address) *Event {
+func (p *Event) withShipping(address Address) *Event {
 	p.ShippingAddress = address
 	return p
 }
 
-func (p *Event) WithBilling(address Address) *Event {
+func (p *Event) withBilling(address Address) *Event {
 	p.BillingAddress = address
 	return p
 }
 
-func (p *Event) WithCardDetails(details CardDetails) *Event {
+func (p *Event) withCardDetails(details CardDetails) *Event {
 	p.CardDetails = details
 	return p
 }
 
-func (p *Event) WithItems(items ...Item) *Event {
+func (p *Event) withItems(items ...Item) *Event {
 	p.Items = items
 	return p
 }
 
-func (p *Event) WithPayment(currency CurrencyCode, paymentMethod PaymentMethod) *Event {
+func (p *Event) withPayment(currency CurrencyCode, paymentMethod PaymentMethod) *Event {
 	p.Currency = currency
 	p.PaymentMethod = paymentMethod
 	return p

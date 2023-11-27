@@ -11,7 +11,7 @@ const (
 	ExpireAfter = time.Second * 3000
 )
 
-var states = map[models.Action]*State{
+var states = map[models.Action]*state{
 	models.ActionRequested: {
 		key: models.ActionRequested,
 		trigger: func(event *models.Event) bool {
@@ -42,9 +42,9 @@ var states = map[models.Action]*State{
 		key: models.ActionCapture,
 		trigger: func(e *models.Event) bool {
 			if e.CapturedAmount <= e.AuthorizedAmount {
-				return false
+				return true
 			}
-			return true
+			return false
 		},
 		nextStates: []models.Action{
 			models.ActionCapture,
@@ -58,10 +58,10 @@ var states = map[models.Action]*State{
 	models.ActionRefund: {
 		trigger: func(e *models.Event) bool {
 			if e.RefundedAmount <= e.CapturedAmount {
-				return false
+				randomNum := rand.Intn(3)
+				return randomNum == 0
 			}
-			randomNum := rand.Intn(3)
-			return randomNum == 0
+			return false
 		},
 		nextStates: []models.Action{
 			models.ActionCapture,
@@ -93,28 +93,38 @@ var states = map[models.Action]*State{
 	},
 }
 
-type State struct {
+type state struct {
 	key             models.Action
 	priority        int
 	nextStates      []models.Action
 	trigger         func(*models.Event) bool
-	ProgressPayment func(*models.Event) *models.Event
+	ProgressPayment func(*models.Event) (*models.Event, bool)
 }
 
-func getCurrentState(action models.Action) *State {
+func getCurrentState(action models.Action) *state {
 	return states[action]
 }
 
-func (s *State) getNextState(p *Record) []State {
-	var possibleState []State
+func sortStates(states []*state) *state {
+	sort.Slice(states, func(i, j int) bool {
+		return states[i].priority > states[j].priority
+	})
+	return states[0]
+}
+
+func (s *state) getNewState(ev *models.Event) *state {
+	var possibleState []*state
 	for _, c := range s.nextStates {
 		currState := getCurrentState(c)
-		if currState.trigger(p.currEvent) {
-			possibleState = append(possibleState, *currState)
+		if currState.trigger(ev) {
+			possibleState = append(possibleState, currState)
 		}
 	}
-	sort.Slice(possibleState, func(i, j int) bool {
-		return possibleState[i].priority > possibleState[j].priority
-	})
-	return possibleState
+	return sortStates(possibleState)
+}
+
+func progressPayment(ev *models.Event) (*models.Event, bool) {
+	current := getCurrentState(ev.Action)
+	next := current.getNewState(ev)
+	return next.ProgressPayment(ev)
 }

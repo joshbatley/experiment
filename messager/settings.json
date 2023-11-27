@@ -1,5 +1,5 @@
 {
-  "tps": 10,
+  "tps": 100,
   "logUrl": "http://localhost:8090/intake",
   "logApiKey": "JBSWY3DPEHPK3PXP",
   "env": "dev",
