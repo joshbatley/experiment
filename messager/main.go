@@ -11,7 +11,7 @@ type Setting struct {
 	Tags      []string `json:"tags,omitempty"`
 	LogUrl    string   `json:"logUrl,omitempty"`
 	LogApiKey string   `json:"logApiKey,omitempty"`
-	Env       string   `json:"env,omitempty""`
+	Env       string   `json:"env,omitempty"`
 	AppName   string   `json:"appName,omitempty"`
 }
 
@@ -28,7 +28,6 @@ func main() {
 	logger.Build()
 
 	log.Info().Msgf("Application Starting up - %s", setting.AppName)
-	defer log.Info().Msgf("Application Shutting down - %s", setting.AppName)
 
-	newRunner(eventstore.NewInMemory(), setting.Tps).StartUp()
+	newRunner(eventstore.NewInMemory(), setting.Tps).startUp()
 }

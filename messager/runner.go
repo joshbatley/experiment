@@ -23,7 +23,7 @@ func newRunner(store eventstore.EventStore, tps int) *runner {
 	}
 }
 
-func (e *runner) StartUp() {
+func (e *runner) startUp() {
 	go func() {
 		for {
 			select {
@@ -53,7 +53,7 @@ func (e *runner) generate() (*Record, error) {
 	payment := fromEventstoreRecord(record)
 	payment.progress()
 	if payment.isCompletedPayment {
-		if err := e.store.RemoveEvent(payment.currEvent.ID); err != nil {
+		if err := e.store.RemoveEvent(payment.currEvent.PaymentID); err != nil {
 			return nil, err
 		}
 		return payment, nil

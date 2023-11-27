@@ -40,7 +40,10 @@ var states = map[models.Action]*State{
 	},
 	models.ActionCapture: {
 		key: models.ActionCapture,
-		trigger: func(event *models.Event) bool {
+		trigger: func(e *models.Event) bool {
+			if e.CapturedAmount <= e.AuthorizedAmount {
+				return false
+			}
 			return true
 		},
 		nextStates: []models.Action{
@@ -53,7 +56,10 @@ var states = map[models.Action]*State{
 		priority:        1,
 	},
 	models.ActionRefund: {
-		trigger: func(event *models.Event) bool {
+		trigger: func(e *models.Event) bool {
+			if e.RefundedAmount <= e.CapturedAmount {
+				return false
+			}
 			randomNum := rand.Intn(3)
 			return randomNum == 0
 		},
@@ -99,8 +105,7 @@ func getCurrentState(action models.Action) *State {
 	return states[action]
 }
 
-// TODO: Think about this
-func (s *State) getNextState(p *Record) State {
+func (s *State) getNextState(p *Record) []State {
 	var possibleState []State
 	for _, c := range s.nextStates {
 		currState := getCurrentState(c)
@@ -111,5 +116,5 @@ func (s *State) getNextState(p *Record) State {
 	sort.Slice(possibleState, func(i, j int) bool {
 		return possibleState[i].priority > possibleState[j].priority
 	})
-	return possibleState[0]
+	return possibleState
 }

@@ -1,50 +1,42 @@
 package main
 
 import (
-	utils "shared"
+	"math/rand"
 	"shared/models"
 )
 
+func generateRandomReference(length int) string {
+	charSet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	word := make([]byte, length)
+	for i := range word {
+		word[i] = charSet[rand.Intn(len(charSet))]
+	}
+
+	return string(word)
+}
+
 func constructRequested() *models.Event {
-	return models.NewEvent(
-		utils.NewEventId(), utils.NewPaymentId(), "", "",
-		"", models.CurrencyAUD, models.PaymentMethodApplePay,
-	).AsRequested(10, models.ResponseCodeSuccess)
+	return models.NewEvent("cli_123123", generateRandomReference(8)).AsRequested()
 }
 
 func progressAuthorization(ev *models.Event) *models.Event {
-	return models.NewEvent(
-		ev.ID, utils.NewPaymentId(), "", "",
-		"", models.CurrencyAUD, models.PaymentMethodApplePay,
-	).AsAuthorized(10, models.ResponseCodeSuccess)
+	return ev.AsAuthorized(10, models.ResponseCodeSuccess)
 }
 
 func progressCapture(ev *models.Event) *models.Event {
-	return models.NewEvent(
-		ev.ID, utils.NewPaymentId(), "", "",
-		"", models.CurrencyAUD, models.PaymentMethodApplePay,
-	).AsCapture(0.3, "")
+	return ev.AsCapture(0.3, "")
 }
 
 func progressRefund(ev *models.Event) *models.Event {
-	return models.NewEvent(
-		ev.ID, utils.NewPaymentId(), "", "",
-		"", models.CurrencyAUD, models.PaymentMethodApplePay,
-	).AsRefund(0.1, "")
+	return ev.AsRefund(0.1, "")
 }
 
 func progressVoid(ev *models.Event) *models.Event {
-	return models.NewEvent(
-		ev.ID, utils.NewPaymentId(), "", "",
-		"", models.CurrencyAUD, models.PaymentMethodApplePay,
-	).AsVoid("2000")
+	return ev.AsVoid("2000")
 }
 
 func progressExpiry(ev *models.Event) *models.Event {
-	return models.NewEvent(
-		ev.ID, utils.NewPaymentId(), "", "",
-		"", models.CurrencyAUD, models.PaymentMethodApplePay,
-	).AsExpiry("2000")
+	return ev.AsExpiry("2000")
 }
 
 //func progressSuccessfulResponse(ev *models.Event) models.ResponseCode {

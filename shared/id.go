@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/base64"
 	"github.com/google/uuid"
+	"strings"
 )
 
 func NewEventId() string {
@@ -11,9 +12,9 @@ func NewEventId() string {
 }
 
 func NewActionId(eventId string) string {
-	return "act_" + base64.StdEncoding.EncodeToString([]byte(eventId))
+	return "act_" + strings.ToLower(base64.StdEncoding.EncodeToString([]byte(eventId)))
 }
 
 func NewPaymentId() string {
-	return "pay_" + base64.StdEncoding.EncodeToString([]byte(NewEventId()))
+	return "pay_" + strings.ToLower(base64.StdEncoding.EncodeToString([]byte(NewEventId())))
 }

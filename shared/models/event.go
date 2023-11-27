@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/rs/zerolog/log"
+	utils "shared"
 	"time"
 )
 
@@ -10,7 +11,7 @@ type Event struct {
 	PaymentID        string                 `json:"payment_id,omitempty"`
 	ActionID         string                 `json:"action_id,omitempty"`
 	ClientId         string                 `json:"client_id,omitempty"`
-	Description      string                 `json:"description,omitempty"`
+	Reference        string                 `json:"description,omitempty"`
 	CapturedAmount   float64                `json:"captured_amount,omitempty"`
 	AuthorizedAmount float64                `json:"authorized_amount,omitempty"`
 	RefundedAmount   float64                `json:"refunded_amount,omitempty"`
@@ -29,30 +30,32 @@ type Event struct {
 	ResponseCode     ResponseCode           `json:"response_code,omitempty"`
 }
 
-func NewEvent(
-	ID string, paymentID string, actionID string, clientId string,
-	description string, currency CurrencyCode, paymentMethod PaymentMethod,
-) *Event {
+func NewEvent(clientId string, reference string) *Event {
+	id := utils.NewEventId()
 	return &Event{
-		ID:            ID,
-		PaymentID:     paymentID,
-		ActionID:      actionID,
-		ClientId:      clientId,
-		Description:   description,
-		Currency:      currency,
-		PaymentMethod: paymentMethod,
-		Timestamp:     time.Now(),
+		ID:        id,
+		PaymentID: utils.NewPaymentId(),
+		ActionID:  utils.NewActionId(id),
+		ClientId:  clientId,
+		Reference: reference,
+		Timestamp: time.Now(),
 	}
 }
 
-func (p *Event) AsRequested(amount float64, code ResponseCode) *Event {
-	p.CapturedAmount = amount
-	p.ResponseCode = code
+func (p *Event) updateIds() {
+	id := utils.NewEventId()
+	p.ID = id
+	p.ActionID = utils.NewActionId(id)
+}
+
+func (p *Event) AsRequested() *Event {
+	p.updateIds()
 	p.Action = ActionRequested
 	return p
 }
 
 func (p *Event) AsAuthorized(amount float64, code ResponseCode) *Event {
+	p.updateIds()
 	p.AuthorizedAmount = amount
 	p.ResponseCode = code
 	p.Action = ActionAuthorize
@@ -60,6 +63,7 @@ func (p *Event) AsAuthorized(amount float64, code ResponseCode) *Event {
 }
 
 func (p *Event) AsCapture(amount float64, code ResponseCode) *Event {
+	p.updateIds()
 	p.CapturedAmount = amount
 	p.ResponseCode = code
 	p.Action = ActionCapture
@@ -67,6 +71,7 @@ func (p *Event) AsCapture(amount float64, code ResponseCode) *Event {
 }
 
 func (p *Event) AsRefund(amount float64, code ResponseCode) *Event {
+	p.updateIds()
 	p.RefundedAmount = amount
 	p.ResponseCode = code
 	p.Action = ActionRefund
@@ -74,12 +79,14 @@ func (p *Event) AsRefund(amount float64, code ResponseCode) *Event {
 }
 
 func (p *Event) AsVoid(code ResponseCode) *Event {
+	p.updateIds()
 	p.Action = ActionVoid
 	p.ResponseCode = code
 	return p
 }
 
 func (p *Event) AsExpiry(code ResponseCode) *Event {
+	p.updateIds()
 	p.Action = ActionExpiry
 	p.ResponseCode = code
 	return p
@@ -115,6 +122,12 @@ func (p *Event) WithItems(items ...Item) *Event {
 	return p
 }
 
+func (p *Event) WithPayment(currency CurrencyCode, paymentMethod PaymentMethod) *Event {
+	p.Currency = currency
+	p.PaymentMethod = paymentMethod
+	return p
+}
+
 func (p *Event) Log() {
 	log.Info().
 		Str("Id", p.ID).
@@ -125,7 +138,7 @@ func (p *Event) Log() {
 		Str("Action", string(p.Action)).
 		Str("Status", string(p.Status)).
 		Str("ResponseCode", string(p.ResponseCode)).
-		Str("Description", p.Description).
+		Str("Reference", p.Reference).
 		Str("Currency", string(p.Currency)).
 		Str("PaymentMethod", string(p.PaymentMethod)).
 		Float64("AuthorizedAmount", p.AuthorizedAmount).

@@ -8,7 +8,7 @@ import (
 
 type Setting struct {
 	Tags    []string `json:"tags,omitempty"`
-	Env     string   `json:"env,omitempty""`
+	Env     string   `json:"env,omitempty"`
 	AppName string   `json:"appName,omitempty"`
 }
 

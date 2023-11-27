@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math/rand"
 	"messager/eventstore"
 	"shared/models"
 	"sort"
@@ -34,7 +35,7 @@ func fromEventstoreRecord(record eventstore.Record) *Record {
 
 func (p *Record) toEventstoreRecord() eventstore.Record {
 	return eventstore.Record{
-		ID:         p.currEvent.ID,
+		ID:         p.currEvent.PaymentID,
 		PastEvents: p.events,
 	}
 }
@@ -43,11 +44,20 @@ func (p *Record) progress() {
 	if p.isCompletedPayment {
 		return
 	}
-	nextState := getCurrentState(p.currEvent.Action).getNextState(p)
-	newEvent := nextState.ProgressPayment(p.currEvent)
-	if len(nextState.nextStates) == 0 {
+	next := getCurrentState(p.currEvent.Action).getNextState(p)
+	if len(next) == 0 {
+		p.isCompletedPayment = true
+		return
+	}
+	newEvent := next[0].ProgressPayment(p.currEvent)
+	if len(next[0].nextStates) == 0 || endEventEarly() {
 		p.isCompletedPayment = true
 	}
 	p.currEvent = newEvent
 	p.events = append(p.events, newEvent)
+}
+
+func endEventEarly() bool {
+	randomNum := rand.Intn(30)
+	return randomNum == 0
 }
