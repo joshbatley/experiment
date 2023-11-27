@@ -28,6 +28,5 @@ func (w HttpWriter) Write(p []byte) (n int, err error) {
 	if err != nil {
 		return 0, err
 	}
-
 	return len(p), err
 }

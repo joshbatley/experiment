@@ -112,7 +112,7 @@ func sortStates(states []*state) *state {
 	return states[0]
 }
 
-func (s *state) getNewState(ev *models.Event) *state {
+func getNewState(s *state, ev *models.Event) *state {
 	var possibleState []*state
 	for _, c := range s.nextStates {
 		currState := getCurrentState(c)
@@ -125,6 +125,6 @@ func (s *state) getNewState(ev *models.Event) *state {
 
 func progressPayment(ev *models.Event) (*models.Event, bool) {
 	current := getCurrentState(ev.Action)
-	next := current.getNewState(ev)
+	next := getNewState(current, ev)
 	return next.ProgressPayment(ev)
 }

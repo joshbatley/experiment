@@ -31,14 +31,14 @@ type Event struct {
 	ResponseCode     ResponseCode           `json:"response_code,omitempty"`
 }
 
-func NewEvent(clientId string, reference string) *Event {
+func NewEvent(clientId string) *Event {
 	id := utils.NewEventId()
 	return &Event{
 		ID:        id,
 		PaymentID: utils.NewPaymentId(),
 		ActionID:  utils.NewActionId(id),
 		ClientId:  clientId,
-		Reference: reference,
+		Reference: utils.GenerateRandomReference(8),
 		Timestamp: time.Now(),
 	}
 }
@@ -74,17 +74,17 @@ func (p *Event) AsCapture() *Event {
 	p.updateIds()
 	p.ResponseCode = ResponseCodeSuccess
 	p.Action = ActionCapture
+
 	if randomChance() {
 		p.CapturedAmount = utils.GenerateRandomNumberBetween(p.AuthorizedAmount - p.CapturedAmount)
-		if p.CapturedAmount == p.AuthorizedAmount {
-			p.Status = StatusCaptured
-		} else {
-			p.Status = StatusPartiallyCaptured
-		}
-		return p
+	} else {
+		p.CapturedAmount = p.AuthorizedAmount
 	}
-	p.CapturedAmount = p.AuthorizedAmount
-	p.Status = StatusCaptured
+	if p.CapturedAmount == p.AuthorizedAmount {
+		p.Status = StatusCaptured
+	} else {
+		p.Status = StatusPartiallyCaptured
+	}
 	return p
 }
 
@@ -92,17 +92,17 @@ func (p *Event) AsRefund() *Event {
 	p.updateIds()
 	p.ResponseCode = ResponseCodeSuccess
 	p.Action = ActionRefund
+
 	if randomChance() {
 		p.RefundedAmount = utils.GenerateRandomNumberBetween(p.CapturedAmount - p.RefundedAmount)
-		if p.RefundedAmount == p.CapturedAmount {
-			p.Status = StatusRefunded
-		} else {
-			p.Status = StatusPartiallyRefunded
-		}
-		return p
+	} else {
+		p.RefundedAmount = p.CapturedAmount
 	}
-	p.RefundedAmount = p.CapturedAmount
-	p.Status = StatusRefunded
+	if p.RefundedAmount == p.CapturedAmount {
+		p.Status = StatusRefunded
+	} else {
+		p.Status = StatusPartiallyRefunded
+	}
 	return p
 }
 

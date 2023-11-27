@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"encoding/base64"
 	"errors"
+	"github.com/google/uuid"
 	"math/rand"
+	"strings"
 )
 
 func FindIndex[T comparable](slice []T, value T) int {
@@ -40,4 +43,27 @@ func GenerateRandomNumberBetween(max float64) float64 {
 		return 0.1
 	}
 	return randomNumber
+}
+
+func NewEventId() string {
+	id, _ := uuid.NewUUID()
+	return id.String()
+}
+
+func NewActionId(eventId string) string {
+	return "act_" + strings.ToLower(base64.StdEncoding.EncodeToString([]byte(eventId)))
+}
+
+func NewPaymentId() string {
+	return "pay_" + strings.ToLower(base64.StdEncoding.EncodeToString([]byte(NewEventId())))
+}
+
+func GenerateRandomReference(length int) string {
+	charSet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	word := make([]byte, length)
+	for i := range word {
+		word[i] = charSet[rand.Intn(len(charSet))]
+	}
+
+	return string(word)
 }

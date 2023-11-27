@@ -1,22 +1,11 @@
 package main
 
 import (
-	"math/rand"
 	"shared/models"
 )
 
-func generateRandomReference(length int) string {
-	charSet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	word := make([]byte, length)
-	for i := range word {
-		word[i] = charSet[rand.Intn(len(charSet))]
-	}
-
-	return string(word)
-}
-
 func constructRequested() *models.Event {
-	return models.NewEvent("cli_123123", generateRandomReference(8)).AsRequested()
+	return models.NewEvent("cli_123123").AsRequested()
 }
 
 func progressAuthorization(ev *models.Event) (*models.Event, bool) {

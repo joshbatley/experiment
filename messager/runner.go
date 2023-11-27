@@ -23,26 +23,21 @@ func newRunner(store eventstore.EventStore, tps int) *runner {
 	}
 }
 
-func (e *runner) startUp() {
-	go func() {
-		for {
-			select {
-			case <-e.ticker.C:
-				ev, err := e.generate()
-				if err != nil {
-					log.Warn().Err(err).Send()
-					e.newEventChance++
-					continue
-				}
-				ev.currEvent.Log()
-			}
-		}
-	}()
-	select {}
+func createNewEvent(store eventstore.EventStore) (*Record, error) {
+	payment := newRecord()
+	if err := store.AddUnfinishedEvent(payment.toEventstoreRecord()); err != nil {
+		return nil, err
+	}
+	return payment, nil
+}
+
+func shouldCreateNewRecord(newEventChance int) bool {
+	randomNum := rand.Intn(newEventChance)
+	return randomNum == 0
 }
 
 func (e *runner) generate() (*Record, error) {
-	if e.shouldCreateNewRecord() {
+	if shouldCreateNewRecord(e.newEventChance) {
 		return createNewEvent(e.store)
 	}
 	record, err := e.store.GetRandomEvent()
@@ -64,15 +59,20 @@ func (e *runner) generate() (*Record, error) {
 	return payment, nil
 }
 
-func (e *runner) shouldCreateNewRecord() bool {
-	randomNum := rand.Intn(e.newEventChance)
-	return randomNum == 0
-}
-
-func createNewEvent(store eventstore.EventStore) (*Record, error) {
-	payment := newRecord()
-	if err := store.AddUnfinishedEvent(payment.toEventstoreRecord()); err != nil {
-		return nil, err
-	}
-	return payment, nil
+func (e *runner) startUp() {
+	go func() {
+		for {
+			select {
+			case <-e.ticker.C:
+				ev, err := e.generate()
+				if err != nil {
+					log.Warn().Err(err).Send()
+					e.newEventChance++
+					continue
+				}
+				ev.currEvent.Log()
+			}
+		}
+	}()
+	select {}
 }
