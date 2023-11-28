@@ -24,137 +24,141 @@ func randomChance() bool {
 	return randomNum == 0
 }
 
-func (p *Event) updateIds() {
+func (e *Event) updateIds() {
 	id := utils.NewEventId()
-	p.ID = id
-	p.ActionID = utils.NewActionId(id)
+	e.ID = id
+	e.ActionID = utils.NewActionId(id)
 }
 
-func (p *Event) AsRequested() *Event {
-	p.updateIds()
-	p.Action = ActionRequested
-	p.AuthorizedAmount = utils.GenerateRandomNumber()
-	p.Status = StatusPending
-	return p
+func (e *Event) clearEventSpecific() {
+
 }
 
-func (p *Event) AsAuthorized() *Event {
-	p.updateIds()
-	p.ResponseCode = ResponseCodeSuccess
-	p.Action = ActionAuthorize
-	p.Status = StatusAuthorized
-	return p
+func (e *Event) AsRequested() *Event {
+	e.updateIds()
+	e.Action = ActionRequested
+	e.AuthorizedAmount = utils.GenerateRandomNumber()
+	e.Status = StatusPending
+	return e
 }
 
-func (p *Event) AsCapture() *Event {
-	p.updateIds()
-	p.ResponseCode = ResponseCodeSuccess
-	p.Action = ActionCapture
+func (e *Event) AsAuthorized() *Event {
+	e.updateIds()
+	e.ResponseCode = ResponseCodeSuccess
+	e.Action = ActionAuthorize
+	e.Status = StatusAuthorized
+	return e
+}
+
+func (e *Event) AsCapture() *Event {
+	e.updateIds()
+	e.ResponseCode = ResponseCodeSuccess
+	e.Action = ActionCapture
 
 	if randomChance() {
-		p.CapturedAmount = utils.GenerateRandomNumberBetween(p.AuthorizedAmount - p.CapturedAmount)
+		e.CapturedAmount = utils.GenerateRandomNumberBetween(e.AuthorizedAmount - e.CapturedAmount)
 	} else {
-		p.CapturedAmount = p.AuthorizedAmount
+		e.CapturedAmount = e.AuthorizedAmount
 	}
-	if p.CapturedAmount == p.AuthorizedAmount {
-		p.Status = StatusCaptured
+	if e.CapturedAmount == e.AuthorizedAmount {
+		e.Status = StatusCaptured
 	} else {
-		p.Status = StatusPartiallyCaptured
+		e.Status = StatusPartiallyCaptured
 	}
-	return p
+	return e
 }
 
-func (p *Event) AsRefund() *Event {
-	p.updateIds()
-	p.ResponseCode = ResponseCodeSuccess
-	p.Action = ActionRefund
+func (e *Event) AsRefund() *Event {
+	e.updateIds()
+	e.ResponseCode = ResponseCodeSuccess
+	e.Action = ActionRefund
 
 	if randomChance() {
-		p.RefundedAmount = utils.GenerateRandomNumberBetween(p.CapturedAmount - p.RefundedAmount)
+		e.RefundedAmount = utils.GenerateRandomNumberBetween(e.CapturedAmount - e.RefundedAmount)
 	} else {
-		p.RefundedAmount = p.CapturedAmount
+		e.RefundedAmount = e.CapturedAmount
 	}
-	if p.RefundedAmount == p.CapturedAmount {
-		p.Status = StatusRefunded
+	if e.RefundedAmount == e.CapturedAmount {
+		e.Status = StatusRefunded
 	} else {
-		p.Status = StatusPartiallyRefunded
+		e.Status = StatusPartiallyRefunded
 	}
-	return p
+	return e
 }
 
-func (p *Event) AsVoid() *Event {
-	p.updateIds()
-	p.Action = ActionVoid
-	p.ResponseCode = ResponseCodeSuccess
-	p.Status = StatusCancelled
-	return p
+func (e *Event) AsVoid() *Event {
+	e.updateIds()
+	e.Action = ActionVoid
+	e.ResponseCode = ResponseCodeSuccess
+	e.Status = StatusCancelled
+	return e
 }
 
-func (p *Event) AsExpiry() *Event {
-	p.updateIds()
-	p.Action = ActionExpiry
-	p.ResponseCode = ResponseCodeSuccess
-	return p
+func (e *Event) AsExpiry() *Event {
+	e.updateIds()
+	e.Action = ActionExpiry
+	e.ResponseCode = ResponseCodeSuccess
+	return e
 }
 
-func (p *Event) withCustomer(customer Customer) *Event {
-	p.Customer = customer
-	return p
+func (e *Event) withCustomer(customer Customer) *Event {
+	e.Customer = customer
+	return e
 }
 
-func (p *Event) withRecipient(recipient Recipient) *Event {
-	p.Recipient = recipient
-	return p
+func (e *Event) withRecipient(recipient Recipient) *Event {
+	e.Recipient = recipient
+	return e
 }
 
-func (p *Event) withShipping(address Address) *Event {
-	p.ShippingAddress = address
-	return p
+func (e *Event) withShipping(address Address) *Event {
+	e.ShippingAddress = address
+	return e
 }
 
-func (p *Event) withBilling(address Address) *Event {
-	p.BillingAddress = address
-	return p
+func (e *Event) withBilling(address Address) *Event {
+	e.BillingAddress = address
+	return e
 }
 
-func (p *Event) withCardDetails(details CardDetails) *Event {
-	p.CardDetails = details
-	return p
+func (e *Event) withCardDetails(details CardDetails) *Event {
+	e.CardDetails = details
+	return e
 }
 
-func (p *Event) withItems(items ...Item) *Event {
-	p.Items = items
-	return p
+func (e *Event) withItems(items ...Item) *Event {
+	e.Items = items
+	return e
 }
 
-func (p *Event) withPayment(currency CurrencyCode, paymentMethod PaymentMethod) *Event {
-	p.Currency = currency
-	p.PaymentMethod = paymentMethod
-	return p
+func (e *Event) withPayment(currency CurrencyCode, paymentMethod PaymentMethod) *Event {
+	e.Currency = currency
+	e.PaymentMethod = paymentMethod
+	return e
 }
 
-func (p *Event) Log() {
+func (e *Event) Log() {
 	log.Info().
-		Str("Id", p.ID).
-		Str("Timestamp", p.Timestamp.String()).
-		Str("PaymentId", p.PaymentID).
-		Str("ActionId", p.ActionID).
-		Str("ClientId", p.ClientId).
-		Str("Action", string(p.Action)).
-		Str("Status", string(p.Status)).
-		Str("ResponseCode", string(p.ResponseCode)).
-		Str("Reference", p.Reference).
-		Str("Currency", string(p.Currency)).
-		Str("PaymentMethod", string(p.PaymentMethod)).
-		Float64("AuthorizedAmount", p.AuthorizedAmount).
-		Float64("CapturedAmount", p.CapturedAmount).
-		Float64("RefundedAmount", p.RefundedAmount).
-		Interface("Metadata", p.Metadata).
-		Interface("Items", p.Items).
-		Interface("Customer", p.Customer).
-		Interface("Recipient", p.Recipient).
-		Interface("BillingAddress", p.BillingAddress).
-		Interface("ShippingAddress", p.ShippingAddress).
-		Interface("CardDetails", p.CardDetails).
+		Str("Id", e.ID).
+		Str("Timestamp", e.Timestamp.String()).
+		Str("PaymentId", e.PaymentID).
+		Str("ActionId", e.ActionID).
+		Str("ClientId", e.ClientId).
+		Str("Action", string(e.Action)).
+		Str("Status", string(e.Status)).
+		Str("ResponseCode", string(e.ResponseCode)).
+		Str("Reference", e.Reference).
+		Str("Currency", string(e.Currency)).
+		Str("PaymentMethod", string(e.PaymentMethod)).
+		Float64("AuthorizedAmount", e.AuthorizedAmount).
+		Float64("CapturedAmount", e.CapturedAmount).
+		Float64("RefundedAmount", e.RefundedAmount).
+		Interface("Metadata", e.Metadata).
+		Interface("Items", e.Items).
+		Interface("Customer", e.Customer).
+		Interface("Recipient", e.Recipient).
+		Interface("BillingAddress", e.BillingAddress).
+		Interface("ShippingAddress", e.ShippingAddress).
+		Interface("CardDetails", e.CardDetails).
 		Send()
 }
