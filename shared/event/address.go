@@ -1,4 +1,4 @@
-package models
+package event
 
 type Address struct {
 	Street1    string `json:"street_1,omitempty"`

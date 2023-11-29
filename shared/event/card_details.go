@@ -1,4 +1,4 @@
-package models
+package event
 
 type CardDetails struct {
 	CardNumber     string `json:"card_number,omitempty"`

@@ -5,7 +5,14 @@ import (
 	"github.com/rs/zerolog/log"
 	"io"
 	"os"
+	"reflect"
+	"strings"
 	"time"
+)
+
+const (
+	LoggerTag = "log"
+	Omit      = "omitempty"
 )
 
 type Logger struct {
@@ -40,4 +47,31 @@ func (l *Logger) WithConsoleLogger() *Logger {
 func (l *Logger) Build() {
 	outputs := zerolog.MultiLevelWriter(l.Writers...)
 	log.Logger = zerolog.New(outputs).With().Strs("tags", l.Tags).Timestamp().Logger()
+}
+
+func LogTags(obj interface{}) {
+	objValue := reflect.ValueOf(obj)
+	if objValue.Kind() == reflect.Ptr {
+		objValue = objValue.Elem()
+	}
+	objType := objValue.Type()
+
+	l := log.Info()
+	for i := 0; i < objType.NumField(); i++ {
+		f := objType.Field(i)
+		v := objValue.Field(i)
+		if strings.Contains(f.Tag.Get(LoggerTag), Omit) && IsStructEmpty(v.Interface()) {
+			continue
+		}
+		switch f.Type.Kind() {
+		case reflect.String:
+			l.Str(f.Name, v.String())
+		case reflect.Float64:
+			l.Float64(f.Name, v.Float())
+		default:
+			l.Interface(f.Name, v.Interface())
+		}
+
+	}
+	l.Send()
 }

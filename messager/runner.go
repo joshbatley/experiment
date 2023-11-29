@@ -4,7 +4,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"math/rand"
 	"messager/eventstore"
-	"shared/models"
+	utils "shared"
 	"time"
 )
 
@@ -25,8 +25,8 @@ func newRunner(store eventstore.EventStore, tps int) *runner {
 }
 
 func createNewEvent(store eventstore.EventStore) (*Record, error) {
-	payment := newRecord()
-	if err := store.AddUnfinishedEvent(payment.toEventstoreRecord()); err != nil {
+	payment := NewRecord()
+	if err := store.AddUnfinishedEvent(payment.ToEventstoreRecord()); err != nil {
 		return nil, err
 	}
 	return payment, nil
@@ -41,23 +41,23 @@ func (e *runner) generate() (*Record, error) {
 	if shouldCreateNewRecord(e.newEventChance) {
 		return createNewEvent(e.store)
 	}
-	record, err := e.store.GetRandomEvent()
+	ev, err := e.store.GetRandomEvent()
 	if err != nil {
 		return createNewEvent(e.store)
 	}
 
-	payment := fromEventstoreRecord(record)
-	payment.progress()
-	if payment.isCompletedPayment {
-		if err := e.store.RemoveEvent(payment.currEvent.PaymentID); err != nil {
+	record := FromEventstoreRecord(ev)
+	record.Progress()
+	if record.isCompleted {
+		if err := e.store.RemoveEvent(record.latestEvent.PaymentID); err != nil {
 			return nil, err
 		}
-		return payment, nil
+		return record, nil
 	}
-	if err := e.store.UpdateEvent(payment.toEventstoreRecord()); err != nil {
+	if err := e.store.UpdateEvent(record.ToEventstoreRecord()); err != nil {
 		return nil, err
 	}
-	return payment, nil
+	return record, nil
 }
 
 func (e *runner) startUp() {
@@ -65,13 +65,16 @@ func (e *runner) startUp() {
 		for {
 			select {
 			case <-e.ticker.C:
-				ev, err := e.generate()
+				r, err := e.generate()
 				if err != nil {
 					log.Warn().Err(err).Send()
 					e.newEventChance++
 					continue
 				}
-				models.LogTags(ev.currEvent)
+
+				if r.isCompleted && len(r.events) > 4 {
+					utils.LogTags(r.latestEvent)
+				}
 			}
 		}
 	}()

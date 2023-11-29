@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"math/rand"
+	"reflect"
 	"strings"
 )
 
@@ -27,26 +28,26 @@ func Find[T comparable](slice []T, comparable func(T) bool) (T, error) {
 	return empty, errors.New("not found")
 }
 
+func RandomChance() bool {
+	randomNum := rand.Intn(10)
+	return randomNum == 0
+}
+
 func GetRandomItem[T any](slice []T) T {
 	randomIdx := rand.Intn(len(slice))
 	return slice[randomIdx]
 }
 
-func formatFloatToTwoDecimal(num float64) float64 {
-	return float64(int(num*100)) / 100
+func GenerateRandomNumber() int {
+	return GenerateRandomNumberBetween(1000000)
 }
 
-func GenerateRandomNumber() float64 {
-	randomNumber := rand.Float64() * 100000
-	return formatFloatToTwoDecimal(randomNumber)
-}
-
-func GenerateRandomNumberBetween(max float64) float64 {
-	randomNumber := rand.Float64() * max
-	if randomNumber == 0 {
-		return 0.1
+func GenerateRandomNumberBetween(max int) int {
+	num := rand.Intn(max)
+	if num == 0 {
+		return 1
 	}
-	return formatFloatToTwoDecimal(randomNumber)
+	return num
 }
 
 func NewEventId() string {
@@ -70,4 +71,10 @@ func GenerateRandomReference(length int) string {
 	}
 
 	return string(word)
+}
+
+func IsStructEmpty(s interface{}) bool {
+	sValue := reflect.ValueOf(s)
+	emptyValue := reflect.New(sValue.Type()).Elem()
+	return reflect.DeepEqual(sValue.Interface(), emptyValue.Interface())
 }

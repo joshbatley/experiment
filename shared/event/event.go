@@ -1,4 +1,4 @@
-package models
+package event
 
 import (
 	"time"
@@ -10,9 +10,9 @@ type Event struct {
 	ActionID         string                 `json:"action_id,omitempty" log:"omitempty"`
 	ClientId         string                 `json:"client_id,omitempty" log:"omitempty"`
 	Reference        string                 `json:"description,omitempty" log:"omitempty"`
-	CapturedAmount   float64                `json:"captured_amount,omitempty" log:"omitempty"`
-	AuthorizedAmount float64                `json:"authorized_amount,omitempty" log:"omitempty"`
-	RefundedAmount   float64                `json:"refunded_amount,omitempty" log:"omitempty"`
+	CapturedAmount   int                    `json:"captured_amount,omitempty" log:"omitempty"`
+	AuthorizedAmount int                    `json:"authorized_amount,omitempty" log:"omitempty"`
+	RefundedAmount   int                    `json:"refunded_amount,omitempty" log:"omitempty"`
 	Timestamp        time.Time              `json:"timestamp" log:"omitempty"`
 	Metadata         map[string]interface{} `json:"metadata,omitempty" log:"omitempty"`
 	Currency         CurrencyCode           `json:"currency,omitempty" log:"omitempty"`

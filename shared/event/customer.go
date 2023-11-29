@@ -1,4 +1,4 @@
-package models
+package event
 
 type Customer struct {
 	PhoneNumber string `json:"phone_number,omitempty"`

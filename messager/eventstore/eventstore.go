@@ -1,12 +1,12 @@
 package eventstore
 
 import (
-	"shared/models"
+	"shared/event"
 )
 
 type Record struct {
 	ID         string
-	PastEvents []*models.Event
+	PastEvents []*event.Event
 }
 
 type EventStore interface {

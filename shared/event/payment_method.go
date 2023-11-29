@@ -1,4 +1,4 @@
-package models
+package event
 
 type PaymentMethod string
 
