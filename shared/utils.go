@@ -32,9 +32,13 @@ func GetRandomItem[T any](slice []T) T {
 	return slice[randomIdx]
 }
 
+func formatFloatToTwoDecimal(num float64) float64 {
+	return float64(int(num*100)) / 100
+}
+
 func GenerateRandomNumber() float64 {
 	randomNumber := rand.Float64() * 100000
-	return randomNumber
+	return formatFloatToTwoDecimal(randomNumber)
 }
 
 func GenerateRandomNumberBetween(max float64) float64 {
@@ -42,7 +46,7 @@ func GenerateRandomNumberBetween(max float64) float64 {
 	if randomNumber == 0 {
 		return 0.1
 	}
-	return randomNumber
+	return formatFloatToTwoDecimal(randomNumber)
 }
 
 func NewEventId() string {

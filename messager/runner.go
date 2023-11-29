@@ -4,6 +4,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"math/rand"
 	"messager/eventstore"
+	"shared/models"
 	"time"
 )
 
@@ -70,7 +71,7 @@ func (e *runner) startUp() {
 					e.newEventChance++
 					continue
 				}
-				ev.currEvent.Log()
+				models.LogTags(ev.currEvent)
 			}
 		}
 	}()

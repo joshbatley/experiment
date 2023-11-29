@@ -3,7 +3,9 @@ package models
 import (
 	"github.com/rs/zerolog/log"
 	"math/rand"
+	"reflect"
 	utils "shared"
+	"strings"
 	"time"
 )
 
@@ -137,28 +139,54 @@ func (e *Event) withPayment(currency CurrencyCode, paymentMethod PaymentMethod) 
 	return e
 }
 
-func (e *Event) Log() {
-	log.Info().
-		Str("Id", e.ID).
-		Str("Timestamp", e.Timestamp.String()).
-		Str("PaymentId", e.PaymentID).
-		Str("ActionId", e.ActionID).
-		Str("ClientId", e.ClientId).
-		Str("Action", string(e.Action)).
-		Str("Status", string(e.Status)).
-		Str("ResponseCode", string(e.ResponseCode)).
-		Str("Reference", e.Reference).
-		Str("Currency", string(e.Currency)).
-		Str("PaymentMethod", string(e.PaymentMethod)).
-		Float64("AuthorizedAmount", e.AuthorizedAmount).
-		Float64("CapturedAmount", e.CapturedAmount).
-		Float64("RefundedAmount", e.RefundedAmount).
-		Interface("Metadata", e.Metadata).
-		Interface("Items", e.Items).
-		Interface("Customer", e.Customer).
-		Interface("Recipient", e.Recipient).
-		Interface("BillingAddress", e.BillingAddress).
-		Interface("ShippingAddress", e.ShippingAddress).
-		Interface("CardDetails", e.CardDetails).
-		Send()
+// Move out
+const (
+	LoggerTag = "log"
+	Omit      = "omitempty"
+)
+
+func LogTags(obj interface{}) {
+	objValue := reflect.ValueOf(obj)
+	if objValue.Kind() == reflect.Ptr {
+		objValue = objValue.Elem()
+	}
+	objType := objValue.Type()
+
+	l := log.Info()
+	q := objType.NumField()
+	for i := 0; i < q; i++ {
+		f := objType.Field(i)
+		tag := f.Tag.Get(LoggerTag)
+		v := objValue.Field(i)
+		n := f.Name
+		switch f.Type.Kind() {
+		case reflect.String:
+			val := v.String()
+			if strings.Contains(tag, Omit) && val == "" {
+				continue
+			}
+			l.Str(n, val)
+		case reflect.Float64:
+			val := v.Float()
+			if strings.Contains(tag, Omit) && val == 0 {
+				continue
+			}
+			l.Float64(n, val)
+		default:
+			val := v.Interface()
+			if strings.Contains(tag, Omit) && isStructEmpty(val) {
+				continue
+			}
+			l.Interface(n, val)
+		}
+
+	}
+	l.Send()
+}
+
+func isStructEmpty(s interface{}) bool {
+	sValue := reflect.ValueOf(s)
+	emptyValue := reflect.New(sValue.Type()).Elem()
+
+	return reflect.DeepEqual(sValue.Interface(), emptyValue.Interface())
 }
