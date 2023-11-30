@@ -17,7 +17,7 @@ type Payment struct {
 	isFinalised bool
 }
 
-func NewPayment() *Payment {
+func New() *Payment {
 	newEvent := constructRequested()
 	return &Payment{
 		events:      []*event.Event{newEvent},
@@ -26,7 +26,7 @@ func NewPayment() *Payment {
 	}
 }
 
-func NewPaymentFromEntry(e *store.Entry) *Payment {
+func NewFromEntry(e *store.Entry) *Payment {
 	sort.Slice(e.Events, func(i, j int) bool {
 		return e.Events[i].Timestamp.Before(e.Events[j].Timestamp)
 	})

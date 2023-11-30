@@ -26,11 +26,19 @@ func NewRunner(store store.Store, tps int) *runner {
 }
 
 func createNewPayment(store store.Store) (*event.Event, error) {
-	p := payment.NewPayment()
+	p := payment.New()
 	if err := store.Insert(p.ToEntry()); err != nil {
 		return nil, err
 	}
 	return p.GetLatestEvent(), nil
+}
+
+func (r *runner) updateStore(p *payment.Payment) error {
+	if p.HasFinalEvent() {
+		return r.store.Delete(p.GetLatestEvent().PaymentID)
+	} else {
+		return r.store.Update(p.ToEntry())
+	}
 }
 
 func (r *runner) generate() (*event.Event, error) {
@@ -42,20 +50,12 @@ func (r *runner) generate() (*event.Event, error) {
 		return createNewPayment(r.store)
 	}
 
-	p := payment.NewPaymentFromEntry(ev).CreateNewEvent()
+	p := payment.NewFromEntry(ev).CreateNewEvent()
 	if err := r.updateStore(p); err != nil {
 		return nil, err
 	}
 
 	return p.GetLatestEvent(), nil
-}
-
-func (r *runner) updateStore(p *payment.Payment) error {
-	if p.HasFinalEvent() {
-		return r.store.Delete(p.GetLatestEvent().PaymentID)
-	} else {
-		return r.store.Update(p.ToEntry())
-	}
 }
 
 func (r *runner) StartUp() {
