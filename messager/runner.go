@@ -2,21 +2,22 @@ package main
 
 import (
 	"github.com/rs/zerolog/log"
-	"math/rand"
-	"messager/eventstore"
+	"messager/payment"
+	"messager/store"
 	utils "shared"
+	"shared/event"
 	"time"
 )
 
-// TODO: Add some sort of limiter for the new event chance
+// TODO: Insert some sort of limiter for the new event chance
 
 type runner struct {
-	store          eventstore.EventStore
+	store          store.Store
 	ticker         *time.Ticker
 	newEventChance int
 }
 
-func newRunner(store eventstore.EventStore, tps int) *runner {
+func NewRunner(store store.Store, tps int) *runner {
 	return &runner{
 		store:          store,
 		ticker:         time.NewTicker(time.Second / time.Duration(tps)),
@@ -24,57 +25,51 @@ func newRunner(store eventstore.EventStore, tps int) *runner {
 	}
 }
 
-func createNewEvent(store eventstore.EventStore) (*Record, error) {
-	payment := NewRecord()
-	if err := store.AddUnfinishedEvent(payment.ToEventstoreRecord()); err != nil {
+func createNewPayment(store store.Store) (*event.Event, error) {
+	p := payment.NewPayment()
+	if err := store.Insert(p.ToEntry()); err != nil {
 		return nil, err
 	}
-	return payment, nil
+	return p.GetLatestEvent(), nil
 }
 
-func shouldCreateNewRecord(newEventChance int) bool {
-	randomNum := rand.Intn(newEventChance)
-	return randomNum == 0
-}
-
-func (e *runner) generate() (*Record, error) {
-	if shouldCreateNewRecord(e.newEventChance) {
-		return createNewEvent(e.store)
+func (r *runner) generate() (*event.Event, error) {
+	if utils.RandomChance(r.newEventChance) {
+		return createNewPayment(r.store)
 	}
-	ev, err := e.store.GetRandomEvent()
+	ev, err := r.store.GetRandom()
 	if err != nil {
-		return createNewEvent(e.store)
+		return createNewPayment(r.store)
 	}
 
-	record := FromEventstoreRecord(ev)
-	record.Progress()
-	if record.isCompleted {
-		if err := e.store.RemoveEvent(record.latestEvent.PaymentID); err != nil {
-			return nil, err
-		}
-		return record, nil
-	}
-	if err := e.store.UpdateEvent(record.ToEventstoreRecord()); err != nil {
+	p := payment.NewPaymentFromEntry(ev).CreateNewEvent()
+	if err := r.updateStore(p); err != nil {
 		return nil, err
 	}
-	return record, nil
+
+	return p.GetLatestEvent(), nil
 }
 
-func (e *runner) startUp() {
+func (r *runner) updateStore(p *payment.Payment) error {
+	if p.HasFinalEvent() {
+		return r.store.Delete(p.GetLatestEvent().PaymentID)
+	} else {
+		return r.store.Update(p.ToEntry())
+	}
+}
+
+func (r *runner) StartUp() {
 	go func() {
 		for {
 			select {
-			case <-e.ticker.C:
-				r, err := e.generate()
+			case <-r.ticker.C:
+				ev, err := r.generate()
 				if err != nil {
 					log.Warn().Err(err).Send()
-					e.newEventChance++
+					r.newEventChance++
 					continue
 				}
-
-				if r.isCompleted && len(r.events) > 4 {
-					utils.LogTags(r.latestEvent)
-				}
+				utils.LogTags(ev)
 			}
 		}
 	}()

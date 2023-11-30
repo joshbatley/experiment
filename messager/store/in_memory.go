@@ -1,4 +1,4 @@
-package eventstore
+package store
 
 import (
 	"errors"
@@ -8,43 +8,43 @@ import (
 )
 
 type InMemoryEventStore struct {
-	store   map[string]Record
+	store   map[string]*Entry
 	keys    []string
 	maxSize int
 }
 
 func NewInMemory() *InMemoryEventStore {
 	return &InMemoryEventStore{
-		store:   make(map[string]Record),
+		store:   make(map[string]*Entry),
 		keys:    []string{},
 		maxSize: 10,
 	}
 }
 
-func (i *InMemoryEventStore) AddUnfinishedEvent(ev Record) error {
+func (i *InMemoryEventStore) Insert(e *Entry) error {
 	if len(i.keys) >= i.maxSize {
 		return errors.New("max capacity")
 	}
-	i.keys = append(i.keys, ev.ID)
-	i.store[ev.ID] = ev
+	i.keys = append(i.keys, e.id)
+	i.store[e.id] = e
 	return nil
 }
 
-func (i *InMemoryEventStore) UpdateEvent(ev Record) error {
-	i.store[ev.ID] = ev
+func (i *InMemoryEventStore) Update(e *Entry) error {
+	i.store[e.id] = e
 	return nil
 }
 
-func (i *InMemoryEventStore) GetRandomEvent() (Record, error) {
+func (i *InMemoryEventStore) GetRandom() (*Entry, error) {
 	if len(i.keys) <= 0 {
-		return Record{}, errors.New("empty")
+		return nil, errors.New("empty")
 	}
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 	rKey := i.keys[r.Intn(len(i.keys))]
 	return i.store[rKey], nil
 }
 
-func (i *InMemoryEventStore) RemoveEvent(id string) error {
+func (i *InMemoryEventStore) Delete(id string) error {
 	if len(i.keys) <= 0 {
 		return errors.New("empty")
 	}

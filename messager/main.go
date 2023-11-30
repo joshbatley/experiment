@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/rs/zerolog/log"
-	"messager/eventstore"
+	"messager/store"
 	utils "shared"
 )
 
@@ -29,5 +29,5 @@ func main() {
 
 	log.Info().Msgf("Application Starting up - %s", setting.AppName)
 
-	newRunner(eventstore.NewInMemory(), setting.Tps).startUp()
+	NewRunner(store.NewInMemory(), setting.Tps).StartUp()
 }

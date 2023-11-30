@@ -28,8 +28,8 @@ func Find[T comparable](slice []T, comparable func(T) bool) (T, error) {
 	return empty, errors.New("not found")
 }
 
-func RandomChance() bool {
-	randomNum := rand.Intn(10)
+func RandomChance(chance int) bool {
+	randomNum := rand.Intn(chance)
 	return randomNum == 0
 }
 

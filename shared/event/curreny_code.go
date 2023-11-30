@@ -23,5 +23,5 @@ const (
 	CurrencyINR CurrencyCode = "INR"
 	CurrencyRUB CurrencyCode = "RUB"
 	CurrencyBRL CurrencyCode = "BRL"
-	// Add more ISO currency codes as needed
+	// Insert more ISO currency codes as needed
 )

@@ -42,7 +42,7 @@ func (e *Event) AsCapture(maxCapturableAmount int) *Event {
 	ne.ResponseCode = ResponseCodeSuccess
 	ne.Action = ActionCapture
 
-	if utils.RandomChance() && maxCapturableAmount > 0 {
+	if utils.RandomChance(10) && maxCapturableAmount > 0 {
 		ne.CapturedAmount = utils.GenerateRandomNumberBetween(maxCapturableAmount)
 	} else {
 		ne.CapturedAmount = maxCapturableAmount
@@ -61,7 +61,7 @@ func (e *Event) AsRefund(maxRefundableAmount int, isFullyCaptured bool) *Event {
 	ne.ResponseCode = ResponseCodeSuccess
 	ne.Action = ActionRefund
 
-	if utils.RandomChance() && maxRefundableAmount > 0 {
+	if utils.RandomChance(10) && maxRefundableAmount > 0 {
 		ne.RefundedAmount = utils.GenerateRandomNumberBetween(maxRefundableAmount)
 	} else {
 		ne.RefundedAmount = maxRefundableAmount
