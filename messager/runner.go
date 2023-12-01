@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"github.com/rs/zerolog/log"
 	"messager/payment"
 	"messager/store"
@@ -25,32 +26,33 @@ func NewRunner(store store.Store, tps int) *runner {
 	}
 }
 
-func createNewPayment(store store.Store) (*event.Event, error) {
-	p := payment.New()
-	if err := store.Insert(p.ToEntry()); err != nil {
-		return nil, err
-	}
-	return p.GetLatestEvent(), nil
-}
-
 func (r *runner) updateStore(p *payment.Payment) error {
 	if p.HasFinalEvent() {
 		return r.store.Delete(p.GetLatestEvent().PaymentID)
-	} else {
-		return r.store.Update(p.ToEntry())
 	}
+	return r.store.UpdateOrInsert(p.ToEntry())
+}
+
+func (r *runner) getOrCreatePayment() (*payment.Payment, error) {
+	if utils.RandomChance(r.newEventChance) {
+		return payment.New("cli_123"), nil
+	}
+	ev, err := r.store.GetRandom()
+	if errors.Is(err, store.ErrNoEvents) {
+		return payment.New("cli_123"), nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return payment.NewFromEntry(ev).CreateNewEvent(), nil
 }
 
 func (r *runner) generate() (*event.Event, error) {
-	if utils.RandomChance(r.newEventChance) {
-		return createNewPayment(r.store)
-	}
-	ev, err := r.store.GetRandom()
+	p, err := r.getOrCreatePayment()
 	if err != nil {
-		return createNewPayment(r.store)
+		return nil, err
 	}
-
-	p := payment.NewFromEntry(ev).CreateNewEvent()
 	if err := r.updateStore(p); err != nil {
 		return nil, err
 	}

@@ -21,7 +21,7 @@ func NewInMemory() *InMemoryEventStore {
 	}
 }
 
-func (i *InMemoryEventStore) Insert(e *Entry) error {
+func (i *InMemoryEventStore) insert(e *Entry) error {
 	if len(i.keys) >= i.maxSize {
 		return errors.New("max capacity")
 	}
@@ -30,14 +30,22 @@ func (i *InMemoryEventStore) Insert(e *Entry) error {
 	return nil
 }
 
-func (i *InMemoryEventStore) Update(e *Entry) error {
+func (i *InMemoryEventStore) update(e *Entry) error {
 	i.store[e.id] = e
 	return nil
 }
 
+func (i *InMemoryEventStore) UpdateOrInsert(e *Entry) error {
+	_, ok := i.store[e.id]
+	if ok {
+		return i.update(e)
+	}
+	return i.insert(e)
+}
+
 func (i *InMemoryEventStore) GetRandom() (*Entry, error) {
 	if len(i.keys) <= 0 {
-		return nil, errors.New("empty")
+		return nil, ErrNoEvents
 	}
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 	rKey := i.keys[r.Intn(len(i.keys))]

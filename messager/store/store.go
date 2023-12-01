@@ -4,6 +4,10 @@ import (
 	"shared/event"
 )
 
+const (
+	ErrNoEvents = Error("invalid input")
+)
+
 type Entry struct {
 	id     string
 	Events []*event.Event
@@ -16,11 +20,14 @@ func NewEntry(id string, e []*event.Event) *Entry {
 	}
 }
 
-// Todo: Create custom errors
+type Error string
+
+func (e Error) Error() string {
+	return string(e)
+}
 
 type Store interface {
-	Insert(e *Entry) error
-	Update(e *Entry) error
+	UpdateOrInsert(e *Entry) error
 	GetRandom() (*Entry, error)
 	Delete(id string) error
 }

@@ -17,8 +17,8 @@ type Payment struct {
 	isFinalised bool
 }
 
-func New() *Payment {
-	newEvent := event.New("cli_123123", "").AsRequested()
+func New(clientId string) *Payment {
+	newEvent := event.New(clientId, "").AsRequested()
 	return &Payment{
 		events:      []*event.Event{newEvent},
 		latestEvent: newEvent,
