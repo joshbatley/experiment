@@ -1,5 +1,7 @@
 package event
 
+import utils "shared"
+
 type CurrencyCode string
 
 const (
@@ -23,5 +25,14 @@ const (
 	CurrencyINR CurrencyCode = "INR"
 	CurrencyRUB CurrencyCode = "RUB"
 	CurrencyBRL CurrencyCode = "BRL"
-	// Insert more ISO currency codes as needed
 )
+
+var currencies = []CurrencyCode{
+	CurrencyUSD, CurrencyEUR, CurrencyJPY, CurrencyGBP, CurrencyAUD, CurrencyCAD, CurrencyCHF, CurrencyCNY,
+	CurrencySEK, CurrencyNZD, CurrencyKRW, CurrencyHKD, CurrencyNOK, CurrencyMXN, CurrencyDKK, CurrencySGD,
+	CurrencyPLN, CurrencyINR, CurrencyRUB, CurrencyBRL,
+}
+
+func GetRandomCurrency() CurrencyCode {
+	return utils.GetRandomItem(currencies)
+}

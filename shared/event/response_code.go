@@ -1,5 +1,7 @@
 package event
 
+import utils "shared"
+
 type ResponseCode string
 
 const (
@@ -30,12 +32,12 @@ const (
 	ResponseCodeCustomFraudCode2   ResponseCode = "604"
 )
 
-var SuccessfulResponseCodes = []ResponseCode{
+var successfulResponseCodes = []ResponseCode{
 	ResponseCodeSuccessfulAction,
 	ResponseCodeSuccess,
 }
 
-var FailureResponseCodes = []ResponseCode{
+var failureResponseCodes = []ResponseCode{
 	ResponseCodeFailure,
 	ResponseCodeInvalidData,
 	ResponseCodeInsufficientFunds,
@@ -44,7 +46,7 @@ var FailureResponseCodes = []ResponseCode{
 	ResponseCodeCustomFailureCode2,
 }
 
-var InformationResponseCode = []ResponseCode{
+var informationResponseCode = []ResponseCode{
 	ResponseCodeExtraInformation,
 	ResponseCodeAdditionalData,
 	ResponseCodePendingAction,
@@ -52,10 +54,26 @@ var InformationResponseCode = []ResponseCode{
 	ResponseCodeCustomCode2,
 }
 
-var FraudResponseCode = []ResponseCode{
+var fraudResponseCode = []ResponseCode{
 	ResponseCodeFraudDetected,
 	ResponseCodeSuspiciousActivity,
 	ResponseCodeIdentityTheft,
 	ResponseCodeCustomFraudCode1,
 	ResponseCodeCustomFraudCode2,
+}
+
+func GetRandomSuccessCode() ResponseCode {
+	return utils.GetRandomItem(successfulResponseCodes)
+}
+
+func GetRandomFailureCode() ResponseCode {
+	return utils.GetRandomItem(failureResponseCodes)
+}
+
+func GetRandomInfoCode() ResponseCode {
+	return utils.GetRandomItem(informationResponseCode)
+}
+
+func GetRandomFraudCode() ResponseCode {
+	return utils.GetRandomItem(fraudResponseCode)
 }

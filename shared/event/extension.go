@@ -25,7 +25,7 @@ func (e *Event) AsRequested() *Event {
 	ne.Action = ActionRequest
 	ne.AuthorizedAmount = utils.GenerateRandomNumber()
 	ne.Status = StatusPending
-	return ne
+	return ne.withPaymentMethod().withCurrency()
 }
 
 func (e *Event) AsAuthorized() *Event {
@@ -129,8 +129,12 @@ func (e *Event) withItems(items ...Item) *Event {
 	return e
 }
 
-func (e *Event) withPayment(currency CurrencyCode, paymentMethod PaymentMethod) *Event {
-	e.Currency = currency
-	e.PaymentMethod = paymentMethod
+func (e *Event) withCurrency() *Event {
+	e.Currency = GetRandomCurrency()
+	return e
+}
+
+func (e *Event) withPaymentMethod() *Event {
+	e.PaymentMethod = GetRandomPaymentMethod()
 	return e
 }

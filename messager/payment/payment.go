@@ -43,11 +43,17 @@ func (p *Payment) addNewEvent(e *event.Event) {
 }
 
 func (p *Payment) getAuthorisedAmount() (total int) {
+	if p.events[0].Status != event.StatusFailed {
+		return 0
+	}
 	return p.events[0].AuthorizedAmount
 }
 
 func (p *Payment) getCapturedAmount() (total int) {
 	for _, ev := range p.events {
+		if ev.Status == event.StatusFailed {
+			continue
+		}
 		total += ev.CapturedAmount
 	}
 	return total
@@ -55,6 +61,9 @@ func (p *Payment) getCapturedAmount() (total int) {
 
 func (p *Payment) getRefundedAmount() (total int) {
 	for _, ev := range p.events {
+		if ev.Status == event.StatusFailed {
+			continue
+		}
 		total += ev.RefundedAmount
 	}
 	return total

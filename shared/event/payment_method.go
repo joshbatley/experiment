@@ -1,5 +1,7 @@
 package event
 
+import utils "shared"
+
 type PaymentMethod string
 
 const (
@@ -16,3 +18,13 @@ const (
 	PaymentMethodJCB             PaymentMethod = "JCB"
 	PaymentMethodDinersClub      PaymentMethod = "Diners Club"
 )
+
+var paymentMethods = []PaymentMethod{
+	PaymentMethodPayPal, PaymentMethodBankTransfer, PaymentMethodApplePay, PaymentMethodGooglePay, PaymentMethodStripe,
+	PaymentMethodVenmo, PaymentMethodVisa, PaymentMethodMastercard, PaymentMethodAmericanExpress, PaymentMethodDiscover,
+	PaymentMethodJCB, PaymentMethodDinersClub,
+}
+
+func GetRandomPaymentMethod() PaymentMethod {
+	return utils.GetRandomItem(paymentMethods)
+}

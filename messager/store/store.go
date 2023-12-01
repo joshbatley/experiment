@@ -4,9 +4,7 @@ import (
 	"shared/event"
 )
 
-const (
-	ErrNoEvents = Error("invalid input")
-)
+const ErrNoEvents = Error("invalid input")
 
 type Entry struct {
 	id     string
