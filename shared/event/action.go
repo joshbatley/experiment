@@ -3,7 +3,7 @@ package event
 type Action string
 
 const (
-	ActionRequested Action = "Requested"
+	ActionRequest   Action = "Request"
 	ActionAuthorize Action = "Authorize"
 	ActionCapture   Action = "Capture"
 	ActionRefund    Action = "Refund"

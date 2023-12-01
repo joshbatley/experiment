@@ -14,60 +14,12 @@ type state struct {
 }
 
 var states = map[event.Action]*state{
-	event.ActionRequested: {
-		trigger: alwaysTrigger,
-		nextStates: []event.Action{
-			event.ActionAuthorize,
-			event.ActionVoid,
-			event.ActionExpiry,
-		},
-		priority: 1,
-	},
-	event.ActionAuthorize: {
-		trigger:         alwaysTrigger,
-		progressPayment: progressAuthorization,
-		nextStates: []event.Action{
-			event.ActionCapture,
-			event.ActionRefund,
-			event.ActionVoid,
-			event.ActionExpiry,
-		},
-		priority: 1,
-	},
-	event.ActionCapture: {
-		trigger:         triggerCapture,
-		progressPayment: progressCapture,
-		nextStates: []event.Action{
-			event.ActionCapture,
-			event.ActionRefund,
-			event.ActionVoid,
-			event.ActionExpiry,
-		},
-		priority: 1,
-	},
-	event.ActionRefund: {
-		trigger:         triggerRefund,
-		progressPayment: progressRefund,
-		nextStates: []event.Action{
-			event.ActionCapture,
-			event.ActionRefund,
-			event.ActionVoid,
-			event.ActionExpiry,
-		},
-		priority: 3,
-	},
-	event.ActionVoid: {
-		trigger:         triggerVoid,
-		progressPayment: progressVoid,
-		nextStates:      []event.Action{},
-		priority:        5,
-	},
-	event.ActionExpiry: {
-		trigger:         triggerExpiry,
-		progressPayment: progressExpiry,
-		nextStates:      []event.Action{},
-		priority:        10,
-	},
+	event.ActionRequest:   request,
+	event.ActionAuthorize: authorize,
+	event.ActionCapture:   capture,
+	event.ActionRefund:    refund,
+	event.ActionVoid:      void,
+	event.ActionExpiry:    expiry,
 }
 
 func getCurrentState(action event.Action) *state {

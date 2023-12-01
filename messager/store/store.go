@@ -16,6 +16,8 @@ func NewEntry(id string, e []*event.Event) *Entry {
 	}
 }
 
+// Todo: Create custom errors
+
 type Store interface {
 	Insert(e *Entry) error
 	Update(e *Entry) error

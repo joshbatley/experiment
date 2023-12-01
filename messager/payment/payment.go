@@ -18,7 +18,7 @@ type Payment struct {
 }
 
 func New() *Payment {
-	newEvent := constructRequested()
+	newEvent := event.New("cli_123123", "").AsRequested()
 	return &Payment{
 		events:      []*event.Event{newEvent},
 		latestEvent: newEvent,
@@ -114,7 +114,7 @@ func (p *Payment) CanRefund() bool {
 }
 
 func (p *Payment) CanExpire() bool {
-	return (p.latestEvent.Action == event.ActionAuthorize || p.latestEvent.Action == event.ActionRequested) &&
+	return (p.latestEvent.Action == event.ActionAuthorize || p.latestEvent.Action == event.ActionRequest) &&
 		p.latestEvent.Timestamp.After(time.Now().Add(ExpireAfter))
 }
 

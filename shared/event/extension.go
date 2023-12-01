@@ -7,7 +7,7 @@ import (
 
 func New(clientId string, paymentId string) *Event {
 	id := utils.NewEventId()
-	if paymentId == "" {
+	if len(paymentId) == 0 {
 		paymentId = utils.NewPaymentId()
 	}
 	return &Event{
@@ -22,7 +22,7 @@ func New(clientId string, paymentId string) *Event {
 
 func (e *Event) AsRequested() *Event {
 	ne := New(e.ClientId, e.PaymentID)
-	ne.Action = ActionRequested
+	ne.Action = ActionRequest
 	ne.AuthorizedAmount = utils.GenerateRandomNumber()
 	ne.Status = StatusPending
 	return ne
@@ -37,23 +37,41 @@ func (e *Event) AsAuthorized() *Event {
 	return ne
 }
 
+func setCaptureStatus(capture int, maxCapturableAmount int) Status {
+	if capture == maxCapturableAmount {
+		return StatusCaptured
+	}
+	return StatusPartiallyCaptured
+}
+
+func setCapturedAmount(maxCapturableAmount int) int {
+	if utils.RandomChance(10) && maxCapturableAmount > 0 {
+		return utils.GenerateRandomNumberBetween(maxCapturableAmount)
+	}
+	return maxCapturableAmount
+}
+
 func (e *Event) AsCapture(maxCapturableAmount int) *Event {
 	ne := New(e.ClientId, e.PaymentID)
 	ne.ResponseCode = ResponseCodeSuccess
 	ne.Action = ActionCapture
-
-	if utils.RandomChance(10) && maxCapturableAmount > 0 {
-		ne.CapturedAmount = utils.GenerateRandomNumberBetween(maxCapturableAmount)
-	} else {
-		ne.CapturedAmount = maxCapturableAmount
-	}
-
-	if ne.CapturedAmount == maxCapturableAmount {
-		ne.Status = StatusCaptured
-	} else {
-		ne.Status = StatusPartiallyCaptured
-	}
+	ne.CapturedAmount = setCapturedAmount(maxCapturableAmount)
+	ne.Status = setCaptureStatus(ne.CapturedAmount, maxCapturableAmount)
 	return ne
+}
+
+func setRefundStatus(refund int, maxRefundableAmount int, isFullyCaptured bool) Status {
+	if refund == maxRefundableAmount && isFullyCaptured {
+		return StatusRefunded
+	}
+	return StatusPartiallyRefunded
+}
+
+func setRefundedAmount(maxRefundableAmount int) int {
+	if utils.RandomChance(10) && maxRefundableAmount > 0 {
+		return utils.GenerateRandomNumberBetween(maxRefundableAmount)
+	}
+	return maxRefundableAmount
 }
 
 func (e *Event) AsRefund(maxRefundableAmount int, isFullyCaptured bool) *Event {
@@ -61,16 +79,8 @@ func (e *Event) AsRefund(maxRefundableAmount int, isFullyCaptured bool) *Event {
 	ne.ResponseCode = ResponseCodeSuccess
 	ne.Action = ActionRefund
 
-	if utils.RandomChance(10) && maxRefundableAmount > 0 {
-		ne.RefundedAmount = utils.GenerateRandomNumberBetween(maxRefundableAmount)
-	} else {
-		ne.RefundedAmount = maxRefundableAmount
-	}
-	if ne.RefundedAmount == maxRefundableAmount && isFullyCaptured {
-		ne.Status = StatusRefunded
-	} else {
-		ne.Status = StatusPartiallyRefunded
-	}
+	ne.RefundedAmount = setRefundedAmount(maxRefundableAmount)
+	ne.Status = setRefundStatus(ne.RefundedAmount, maxRefundableAmount, isFullyCaptured)
 	return ne
 }
 
