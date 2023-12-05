@@ -26,7 +26,7 @@ func New(clientId string) *Payment {
 	}
 }
 
-func NewFromEntry(e *store.Entry) *Payment {
+func NewFromStore(e *store.Entry) *Payment {
 	sort.Slice(e.Events, func(i, j int) bool {
 		return e.Events[i].Timestamp.Before(e.Events[j].Timestamp)
 	})

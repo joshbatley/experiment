@@ -45,7 +45,7 @@ func (r *runner) getOrCreatePayment() (*payment.Payment, error) {
 		return nil, err
 	}
 
-	return payment.NewFromEntry(ev).CreateNewEvent(), nil
+	return payment.NewFromStore(ev).CreateNewEvent(), nil
 }
 
 func (r *runner) generate() (*event.Event, error) {
