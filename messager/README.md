@@ -1,4 +1,6 @@
-# messager
+# Messager
+
+This creates and publishes events into the message queue(kafka?), all events look and are correctly linked to each other. This is basically a dummy event composer, it has a TPS setting to force high loads and simulate an actual service.
 
 TOOD:
 - [X] Compose a event
