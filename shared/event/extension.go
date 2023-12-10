@@ -48,33 +48,66 @@ func setRefundedAmount(maxRefundableAmount int) int {
 	return maxRefundableAmount
 }
 
-func (e *Event) withCustomer(customer Customer) *Event {
-	e.Customer = customer
+func (e *Event) withCustomer() *Event {
+	e.Customer = Customer{
+		PhoneNumber: utils.GetRandomItem(fakePhone),
+		Email:       utils.GetRandomItem(fakeEmail),
+		Name:        utils.GetRandomItem(fakeName),
+	}
 	return e
 }
 
-func (e *Event) withRecipient(recipient Recipient) *Event {
-	e.Recipient = recipient
+func (e *Event) withRecipient() *Event {
+	e.Recipient = Recipient{
+		Name:          utils.GetRandomItem(fakeName),
+		AccountNumber: utils.GetRandomItem(fakeAccountNo),
+		BankName:      utils.GetRandomItem(fakeBank),
+	}
 	return e
 }
 
-func (e *Event) withShipping(address Address) *Event {
-	e.ShippingAddress = address
+func (e *Event) withShipping() *Event {
+	e.ShippingAddress = Address{
+		Street1:    utils.GetRandomItem(fakeStreet1),
+		Street2:    utils.GetRandomItem(fakeStreet2),
+		City:       utils.GetRandomItem(fakeCity),
+		State:      utils.GetRandomItem(fakeState),
+		PostalCode: utils.GetRandomItem(fakePostalCode),
+		Country:    utils.GetRandomItem(fakeCountry),
+	}
 	return e
 }
 
-func (e *Event) withBilling(address Address) *Event {
-	e.BillingAddress = address
+func (e *Event) withBilling() *Event {
+	e.BillingAddress = Address{
+		Street1:    utils.GetRandomItem(fakeStreet1),
+		Street2:    utils.GetRandomItem(fakeStreet2),
+		City:       utils.GetRandomItem(fakeCity),
+		State:      utils.GetRandomItem(fakeState),
+		PostalCode: utils.GetRandomItem(fakePostalCode),
+		Country:    utils.GetRandomItem(fakeCountry),
+	}
 	return e
 }
 
-func (e *Event) withCardDetails(details CardDetails) *Event {
-	e.CardDetails = details
-	return e
-}
+func (e *Event) withCardDetails() *Event {
+	month := utils.GenerateRandomNumberBetween(12)
+	if month == 0 {
+		month++
+	}
+	year := utils.GenerateRandomNumberBetween(99)
+	if year < 23 {
+		year = 23
+	}
 
-func (e *Event) withItems(items ...Item) *Event {
-	e.Items = items
+	e.CardDetails = CardDetails{
+		CardNumber:     utils.GetRandomItem(fakeCardNumber),
+		ExpiryMonth:    month,
+		ExpiryYear:     year,
+		CVV:            utils.GetRandomItem(fakeCvv),
+		CardholderName: utils.GetRandomItem(fakeName),
+		IssuingBank:    utils.GetRandomItem(fakeBank),
+	}
 	return e
 }
 

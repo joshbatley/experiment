@@ -24,6 +24,5 @@ type Event struct {
 	BillingAddress   Address                `json:"billing_address" log:"omitempty"`
 	ShippingAddress  Address                `json:"shipping_address" log:"omitempty"`
 	CardDetails      CardDetails            `json:"card_details" log:"omitempty"`
-	Items            []Item                 `json:"items,omitempty" log:"omitempty"`
 	ResponseCode     ResponseCode           `json:"response_code,omitempty" log:"omitempty"`
 }
