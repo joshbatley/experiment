@@ -17,7 +17,7 @@ func NewInMemory() *InMemoryEventStore {
 	return &InMemoryEventStore{
 		store:   make(map[string]*Entry),
 		keys:    []string{},
-		maxSize: 10,
+		maxSize: 1000,
 	}
 }
 

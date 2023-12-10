@@ -154,3 +154,7 @@ func (p *Payment) CreateNewEvent() *Payment {
 func (p *Payment) GetLatestEvent() *event.Event {
 	return p.latestEvent
 }
+
+func (p *Payment) NumOfEvent() int {
+	return len(p.events)
+}

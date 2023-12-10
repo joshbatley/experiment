@@ -31,5 +31,5 @@ func triggerAuthorized(p *Payment) bool {
 
 func progressAuthorization(p *Payment) (*event.Event, bool) {
 	event := p.latestEvent.AsAuthorized()
-	return event, false
+	return event, event.IsFailureResponseCode()
 }

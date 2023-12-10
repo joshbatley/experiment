@@ -14,13 +14,6 @@ const (
 	ResponseCodeDuplicateTransaction ResponseCode = "402"
 	ResponseCodeCustomFailureCode1   ResponseCode = "403"
 	ResponseCodeCustomFailureCode2   ResponseCode = "404"
-
-	// Information category
-	ResponseCodeExtraInformation ResponseCode = "3XX"
-	ResponseCodeAdditionalData   ResponseCode = "301"
-	ResponseCodePendingAction    ResponseCode = "302"
-	ResponseCodeCustomCode1      ResponseCode = "303"
-	ResponseCodeCustomCode2      ResponseCode = "304"
 )
 
 var successfulResponseCodes = []ResponseCode{
@@ -35,12 +28,4 @@ var failureResponseCodes = []ResponseCode{
 	ResponseCodeDuplicateTransaction,
 	ResponseCodeCustomFailureCode1,
 	ResponseCodeCustomFailureCode2,
-}
-
-var informationResponseCode = []ResponseCode{
-	ResponseCodeExtraInformation,
-	ResponseCodeAdditionalData,
-	ResponseCodePendingAction,
-	ResponseCodeCustomCode1,
-	ResponseCodeCustomCode2,
 }

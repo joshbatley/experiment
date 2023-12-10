@@ -28,10 +28,6 @@ func getRandomFailureCode() ResponseCode {
 	return utils.GetRandomItem(failureResponseCodes)
 }
 
-func getRandomInfoCode() ResponseCode {
-	return utils.GetRandomItem(informationResponseCode)
-}
-
 func setCaptureStatus(capture int, maxCapturableAmount int) Status {
 	if capture == maxCapturableAmount {
 		return StatusCaptured
@@ -58,6 +54,15 @@ func setRefundedAmount(maxRefundableAmount int) int {
 		return utils.GenerateRandomNumberBetween(maxRefundableAmount)
 	}
 	return maxRefundableAmount
+}
+
+func (e *Event) withRandomChanceOfFailure() *Event {
+	if !utils.RandomChance(100) {
+		return e
+	}
+	e.ResponseCode = getRandomFailureCode()
+	e.Status = StatusFailed
+	return e
 }
 
 func (e *Event) withCustomer() *Event {
@@ -138,35 +143,36 @@ func (e *Event) AsRequested() *Event {
 	ne.Action = ActionRequest
 	ne.AuthorizedAmount = utils.GenerateRandomNumber()
 	ne.Status = StatusPending
-	return ne.withPaymentMethod().withCurrency().withCardDetails().withBilling().withCustomer().withRecipient().withShipping()
+	ne.ResponseCode = getRandomSuccessCode()
+	return ne.withPaymentMethod().withCurrency().withCardDetails().withBilling().withCustomer().withRecipient().withShipping().withRandomChanceOfFailure()
 }
 
 func (e *Event) AsAuthorized() *Event {
 	ne := New(e.ClientId, e.PaymentID)
-	ne.ResponseCode = ResponseCodeSuccess
+	ne.ResponseCode = getRandomSuccessCode()
 	ne.Action = ActionAuthorize
 	ne.Status = StatusAuthorized
 	ne.AuthorizedAmount = e.AuthorizedAmount
-	return ne
+	return ne.withRandomChanceOfFailure()
 }
 
 func (e *Event) AsCapture(maxCapturableAmount int) *Event {
 	ne := New(e.ClientId, e.PaymentID)
-	ne.ResponseCode = ResponseCodeSuccess
+	ne.ResponseCode = getRandomSuccessCode()
 	ne.Action = ActionCapture
 	ne.CapturedAmount = setCapturedAmount(maxCapturableAmount)
 	ne.Status = setCaptureStatus(ne.CapturedAmount, maxCapturableAmount)
-	return ne
+	return ne.withRandomChanceOfFailure()
 }
 
 func (e *Event) AsRefund(maxRefundableAmount int, isFullyCaptured bool) *Event {
 	ne := New(e.ClientId, e.PaymentID)
-	ne.ResponseCode = ResponseCodeSuccess
+	ne.ResponseCode = getRandomSuccessCode()
 	ne.Action = ActionRefund
 
 	ne.RefundedAmount = setRefundedAmount(maxRefundableAmount)
 	ne.Status = setRefundStatus(ne.RefundedAmount, maxRefundableAmount, isFullyCaptured)
-	return ne
+	return ne.withRandomChanceOfFailure()
 }
 
 func (e *Event) AsVoid() *Event {
@@ -181,5 +187,14 @@ func (e *Event) AsExpiry() *Event {
 	ne := New(e.ClientId, e.PaymentID)
 	ne.Action = ActionExpiry
 	ne.ResponseCode = getRandomFailureCode()
+	ne.Status = StatusFailed
 	return ne
+}
+
+func (e *Event) IsSuccessfulResponseCode() bool {
+	return utils.FindIndex(successfulResponseCodes, e.ResponseCode) > 0
+}
+
+func (e *Event) IsFailureResponseCode() bool {
+	return utils.FindIndex(failureResponseCodes, e.ResponseCode) > 0
 }

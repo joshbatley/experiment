@@ -27,6 +27,9 @@ func NewRunner(store store.Store, tps int) *runner {
 }
 
 func (r *runner) updateStore(p *payment.Payment) error {
+	if p.NumOfEvent() <= 1 && p.HasFinalEvent() {
+		return nil
+	}
 	if p.HasFinalEvent() {
 		return r.store.Delete(p.GetLatestEvent().PaymentID)
 	}

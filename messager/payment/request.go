@@ -22,5 +22,5 @@ func triggerRequest(p *Payment) bool {
 
 func progressRequested(p *Payment) (*event.Event, bool) {
 	event := event.New(p.clientId, "").AsRequested()
-	return event, false
+	return event, event.IsFailureResponseCode()
 }
