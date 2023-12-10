@@ -12,7 +12,10 @@ var void = &state{
 	priority:        5,
 }
 
-func triggerVoid(*Payment) bool {
+func triggerVoid(p *Payment) bool {
+	if p.GetLatestEvent() == nil {
+		return false
+	}
 	return utils.RandomChance(1000)
 }
 

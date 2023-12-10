@@ -7,14 +7,25 @@ var authorize = &state{
 	progressPayment: progressAuthorization,
 	nextStates: []event.Action{
 		event.ActionCapture,
-		event.ActionRefund,
 		event.ActionVoid,
 		event.ActionExpiry,
 	},
 	priority: 1,
 }
 
-func triggerAuthorized(*Payment) bool {
+func triggerAuthorized(p *Payment) bool {
+	if p.GetLatestEvent() == nil {
+		return false
+	}
+	var requested *event.Event
+	for _, e := range p.events {
+		if e.Action == event.ActionRequest {
+			requested = e
+		}
+	}
+	if requested.Status == event.StatusCancelled || requested.Status == event.StatusFailed {
+		return false
+	}
 	return true
 }
 

@@ -10,7 +10,7 @@ type state struct {
 	priority        int
 	nextStates      []event.Action
 	trigger         func(*Payment) bool
-	progressPayment func(*Payment) (*event.Event, bool)
+	progressPayment func(*Payment) (e *event.Event, isComplete bool)
 }
 
 var states = map[event.Action]*state{
@@ -22,10 +22,6 @@ var states = map[event.Action]*state{
 	event.ActionExpiry:    expiry,
 }
 
-func getCurrentState(action event.Action) *state {
-	return states[action]
-}
-
 func sortStates(states []*state) *state {
 	sort.Slice(states, func(i, j int) bool {
 		return states[i].priority > states[j].priority
@@ -33,10 +29,14 @@ func sortStates(states []*state) *state {
 	return states[0]
 }
 
-func getNextState(s *state, p *Payment) (*state, error) {
+func getNextState(p *Payment) (*state, error) {
 	var possibleState []*state
-	for _, c := range s.nextStates {
-		currState := getCurrentState(c)
+	// Can we refactor this out?
+	if p.GetLatestEvent() == nil {
+		return request, nil
+	}
+	for _, c := range states[p.latestEvent.Action].nextStates {
+		currState := states[c]
 		if currState.trigger(p) {
 			possibleState = append(possibleState, currState)
 		}
@@ -50,8 +50,7 @@ func getNextState(s *state, p *Payment) (*state, error) {
 }
 
 func createNewEvent(p *Payment) (*event.Event, bool) {
-	s := getCurrentState(p.latestEvent.Action)
-	next, err := getNextState(s, p)
+	next, err := getNextState(p)
 	if err != nil {
 		return nil, true
 	}

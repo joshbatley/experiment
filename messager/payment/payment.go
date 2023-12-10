@@ -15,14 +15,15 @@ type Payment struct {
 	events      []*event.Event
 	latestEvent *event.Event
 	isFinalised bool
+	clientId    string
 }
 
 func New(clientId string) *Payment {
-	newEvent := event.New(clientId, "").AsRequested()
 	return &Payment{
-		events:      []*event.Event{newEvent},
-		latestEvent: newEvent,
+		events:      []*event.Event{},
+		latestEvent: nil,
 		isFinalised: false,
+		clientId:    clientId,
 	}
 }
 
@@ -34,6 +35,7 @@ func NewFromStore(e *store.Entry) *Payment {
 		latestEvent: e.Events[len(e.Events)-1],
 		events:      e.Events,
 		isFinalised: false,
+		clientId:    e.Events[0].ClientId,
 	}
 }
 
@@ -43,7 +45,7 @@ func (p *Payment) addNewEvent(e *event.Event) {
 }
 
 func (p *Payment) getAuthorisedAmount() (total int) {
-	if p.events[0].Status != event.StatusFailed {
+	if p.events[0].Status == event.StatusFailed {
 		return 0
 	}
 	return p.events[0].AuthorizedAmount
@@ -114,16 +116,25 @@ func (p *Payment) IsRefunded() bool {
 	return false
 }
 
+func (p *Payment) IsAuthorised() bool {
+	for _, ev := range p.events {
+		if ev.Status == event.StatusAuthorized {
+			return true
+		}
+	}
+	return false
+}
+
 func (p *Payment) CanCapture() bool {
-	return !p.isFinalised && !p.IsCaptured() && p.MaxCapturable() != 0
+	return !p.isFinalised && p.IsAuthorised() && !p.IsCaptured() && p.MaxCapturable() != 0
 }
 
 func (p *Payment) CanRefund() bool {
-	return !p.isFinalised && p.hasCapturedEvent() && !p.IsRefunded() && p.MaxRefundable() != 0
+	return !p.isFinalised && p.IsAuthorised() && p.hasCapturedEvent() && !p.IsRefunded() && p.MaxRefundable() != 0
 }
 
 func (p *Payment) CanExpire() bool {
-	return (p.latestEvent.Action == event.ActionAuthorize || p.latestEvent.Action == event.ActionRequest) &&
+	return (p.latestEvent.Status == event.StatusAuthorized || p.latestEvent.Status == event.StatusPending) &&
 		p.latestEvent.Timestamp.After(time.Now().Add(ExpireAfter))
 }
 

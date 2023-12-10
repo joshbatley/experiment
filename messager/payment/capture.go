@@ -9,12 +9,14 @@ var capture = &state{
 		event.ActionCapture,
 		event.ActionRefund,
 		event.ActionVoid,
-		event.ActionExpiry,
 	},
 	priority: 1,
 }
 
 func triggerCapture(p *Payment) bool {
+	if p.GetLatestEvent() == nil {
+		return false
+	}
 	if p.CanCapture() {
 		return true
 	}

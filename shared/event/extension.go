@@ -20,6 +20,18 @@ func New(clientId string, paymentId string) *Event {
 	}
 }
 
+func getRandomSuccessCode() ResponseCode {
+	return utils.GetRandomItem(successfulResponseCodes)
+}
+
+func getRandomFailureCode() ResponseCode {
+	return utils.GetRandomItem(failureResponseCodes)
+}
+
+func getRandomInfoCode() ResponseCode {
+	return utils.GetRandomItem(informationResponseCode)
+}
+
 func setCaptureStatus(capture int, maxCapturableAmount int) Status {
 	if capture == maxCapturableAmount {
 		return StatusCaptured
@@ -112,12 +124,12 @@ func (e *Event) withCardDetails() *Event {
 }
 
 func (e *Event) withCurrency() *Event {
-	e.Currency = GetRandomCurrency()
+	e.Currency = utils.GetRandomItem(currencies)
 	return e
 }
 
 func (e *Event) withPaymentMethod() *Event {
-	e.PaymentMethod = GetRandomPaymentMethod()
+	e.PaymentMethod = utils.GetRandomItem(paymentMethods)
 	return e
 }
 
@@ -126,7 +138,7 @@ func (e *Event) AsRequested() *Event {
 	ne.Action = ActionRequest
 	ne.AuthorizedAmount = utils.GenerateRandomNumber()
 	ne.Status = StatusPending
-	return ne.withPaymentMethod().withCurrency()
+	return ne.withPaymentMethod().withCurrency().withCardDetails().withBilling().withCustomer().withRecipient().withShipping()
 }
 
 func (e *Event) AsAuthorized() *Event {
@@ -160,7 +172,7 @@ func (e *Event) AsRefund(maxRefundableAmount int, isFullyCaptured bool) *Event {
 func (e *Event) AsVoid() *Event {
 	ne := New(e.ClientId, e.PaymentID)
 	ne.Action = ActionVoid
-	ne.ResponseCode = ResponseCodeSuccess
+	ne.ResponseCode = getRandomFailureCode()
 	ne.Status = StatusCancelled
 	return ne
 }
@@ -168,6 +180,6 @@ func (e *Event) AsVoid() *Event {
 func (e *Event) AsExpiry() *Event {
 	ne := New(e.ClientId, e.PaymentID)
 	ne.Action = ActionExpiry
-	ne.ResponseCode = ResponseCodeSuccess
+	ne.ResponseCode = getRandomFailureCode()
 	return ne
 }

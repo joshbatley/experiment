@@ -10,6 +10,9 @@ var expiry = &state{
 }
 
 func triggerExpiry(p *Payment) bool {
+	if p.GetLatestEvent() == nil {
+		return false
+	}
 	return p.CanExpire()
 }
 

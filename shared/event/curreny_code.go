@@ -1,7 +1,5 @@
 package event
 
-import utils "shared"
-
 type CurrencyCode string
 
 const (
@@ -31,8 +29,4 @@ var currencies = []CurrencyCode{
 	CurrencyUSD, CurrencyEUR, CurrencyJPY, CurrencyGBP, CurrencyAUD, CurrencyCAD, CurrencyCHF, CurrencyCNY,
 	CurrencySEK, CurrencyNZD, CurrencyKRW, CurrencyHKD, CurrencyNOK, CurrencyMXN, CurrencyDKK, CurrencySGD,
 	CurrencyPLN, CurrencyINR, CurrencyRUB, CurrencyBRL,
-}
-
-func GetRandomCurrency() CurrencyCode {
-	return utils.GetRandomItem(currencies)
 }

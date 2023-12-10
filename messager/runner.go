@@ -35,11 +35,11 @@ func (r *runner) updateStore(p *payment.Payment) error {
 
 func (r *runner) getOrCreatePayment() (*payment.Payment, error) {
 	if utils.RandomChance(r.newEventChance) {
-		return payment.New("cli_123"), nil
+		return payment.New("cli_123").CreateNewEvent(), nil
 	}
 	ev, err := r.store.GetRandom()
 	if errors.Is(err, store.ErrNoEvents) {
-		return payment.New("cli_123"), nil
+		return payment.New("cli_123").CreateNewEvent(), nil
 	}
 	if err != nil {
 		return nil, err

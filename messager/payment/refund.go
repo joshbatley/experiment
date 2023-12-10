@@ -12,12 +12,14 @@ var refund = &state{
 		event.ActionCapture,
 		event.ActionRefund,
 		event.ActionVoid,
-		event.ActionExpiry,
 	},
 	priority: 3,
 }
 
 func triggerRefund(p *Payment) bool {
+	if p.GetLatestEvent() == nil {
+		return false
+	}
 	if p.CanRefund() {
 		return utils.RandomChance(3)
 	}
